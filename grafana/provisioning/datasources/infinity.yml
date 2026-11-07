@@ -1,0 +1,21 @@
+# Grafana datasource: the Infinity plugin reading JSON from the app's
+# /api/stats endpoints. (We do NOT use Grafana's Enterprise MongoDB source.)
+#
+# Inside the docker-compose network, Grafana reaches the app at http://app:3000
+# (the service name + container port). The base URL below lets the dashboard
+# panels use short relative paths like /api/stats/by-category.
+apiVersion: 1
+
+datasources:
+  - name: STEM Data Wall API
+    uid: datawall-api
+    type: yesoreyeram-infinity-datasource
+    access: proxy
+    isDefault: true
+    editable: true
+    url: http://app:3000
+    jsonData:
+      # Allow the app host so Infinity's security check is satisfied offline.
+      allowedHosts:
+        - http://app:3000
+      tlsSkipVerify: true

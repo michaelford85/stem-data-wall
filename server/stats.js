@@ -114,6 +114,7 @@ async function byCategory() {
       picks: r.picks,
       answers: r.answers,
       correct: r.correct,
+      total: r.picks + r.answers, // combined popularity (used by Grafana)
       percentCorrect: r.answers ? Math.round((r.correct / r.answers) * 100) : 0,
     };
   });

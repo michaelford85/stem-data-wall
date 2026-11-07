@@ -1,0 +1,13 @@
+# Tells Grafana to load any dashboard JSON files in this folder.
+apiVersion: 1
+
+providers:
+  - name: STEM Data Wall
+    orgId: 1
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: false
