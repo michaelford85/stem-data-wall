@@ -1,0 +1,41 @@
+{
+  "_comment": "Single source of truth for the events collection validator. Loaded by server/db.js (Node) and scripts/reset_db.py (Python). additionalProperties:false means a document can ONLY contain the fields listed here — a stray field like 'name' is rejected by MongoDB. This is how 'collect no personal data' is enforced in the database itself.",
+  "$jsonSchema": {
+    "bsonType": "object",
+    "additionalProperties": false,
+    "required": ["type", "station", "ts"],
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "type": {
+        "enum": ["tile_pick", "answer", "mystery_topic"],
+        "description": "What kind of event this is."
+      },
+      "category": {
+        "bsonType": ["string", "null"],
+        "description": "Category key, e.g. data_detectives."
+      },
+      "questionId": {
+        "bsonType": ["string", "null"],
+        "description": "Question id, e.g. dd1. Null for mystery topics."
+      },
+      "answerId": {
+        "bsonType": ["string", "null"],
+        "description": "Answer id (a/b/c/d) or mystery topic key. Null for tile picks."
+      },
+      "correct": {
+        "bsonType": ["bool", "null"],
+        "description": "Whether the chosen answer was correct. Null unless type=answer."
+      },
+      "station": {
+        "bsonType": "string",
+        "description": "Which table/station produced the event. No personal data."
+      },
+      "ts": {
+        "bsonType": "date",
+        "description": "Server timestamp."
+      }
+    }
+  }
+}

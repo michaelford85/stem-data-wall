@@ -1,0 +1,40 @@
+# ===========================================================================
+# team.yaml — the four people staffing the table. Shown on the attract-mode
+# "meet the team" slide (4 quadrants) on the big monitor.
+#
+# Fill in the real details before the event. The "photo" is just a file name;
+# drop the matching image into media/team/ (that folder is git-ignored so real
+# photos never get committed). Placeholder SVGs ship in the repo.
+#
+# PRIVACY: this file is about the ADULT staff, who choose what to share. Never
+# add any kid's information here.
+# ===========================================================================
+
+team:
+  - name: "Alex Rivera"
+    company: "Acme Tech"
+    role: "Technical Sales Engineer"
+    years: 8
+    fun_fact: "Once demoed software to 500 people with a cat on the keyboard."
+    photo: "placeholder-1.svg"
+
+  - name: "Sam Chen"
+    company: "Acme Tech"
+    role: "Solutions Architect"
+    years: 12
+    fun_fact: "Builds LEGO models of the data centers I design."
+    photo: "placeholder-2.svg"
+
+  - name: "Jordan Patel"
+    company: "Acme Tech"
+    role: "Cybersecurity Engineer"
+    years: 6
+    fun_fact: "Can spot a phishing email from a mile away."
+    photo: "placeholder-3.svg"
+
+  - name: "Taylor Morgan"
+    company: "Acme Tech"
+    role: "Automation Engineer"
+    years: 9
+    fun_fact: "Taught a robot to water my plants."
+    photo: "placeholder-4.svg"

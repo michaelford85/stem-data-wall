@@ -1,0 +1,32 @@
+[
+  {
+    "key": { "ts": 1 },
+    "name": "ts_1",
+    "_comment": "Time-series / per-minute queries and latest-N feed."
+  },
+  {
+    "key": { "type": 1, "category": 1 },
+    "name": "type_category",
+    "_comment": "Category popularity and per-category rollups."
+  },
+  {
+    "key": { "type": 1, "questionId": 1 },
+    "name": "type_question",
+    "_comment": "Answer distribution per question."
+  },
+  {
+    "key": { "questionId": 1, "answerId": 1 },
+    "name": "question_answer",
+    "_comment": "Counts of each answer within a question."
+  },
+  {
+    "key": { "type": 1, "category": 1, "correct": 1 },
+    "name": "type_category_correct",
+    "_comment": "Percent correct per category."
+  },
+  {
+    "key": { "station": 1 },
+    "name": "station_1",
+    "_comment": "Events by station."
+  }
+]

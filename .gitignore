@@ -1,0 +1,40 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Environment / secrets — NEVER commit real secrets. Only .env.example is tracked.
+.env
+.env.*
+!.env.example
+
+# Data volumes / local runtime data
+data/
+*.log
+
+# Reset backups produced by scripts/reset_db.py --backup
+backups/
+*.backup.json
+
+# Team member photos are private — commit placeholders only (see media/team/README.md)
+media/team/*
+!media/team/.gitkeep
+!media/team/README.md
+!media/team/placeholder-*.svg
+
+# Attract-mode media can be large / private — keep the folder, ignore drop-ins
+media/attract/*
+!media/attract/.gitkeep
+!media/attract/README.md
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+scripts/.venv/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

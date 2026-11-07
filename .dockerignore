@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+backups
+data
+ansible
+grafana
+scripts
+gpio
+*.md
+media/team/*
+!media/team/placeholder-*.svg
+media/attract/*

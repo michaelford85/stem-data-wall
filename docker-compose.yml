@@ -1,0 +1,90 @@
+# ===========================================================================
+# stem-data-wall — the whole stack in one file.
+#
+#   mongo    : stores the (anonymous) game events. Port is bound to localhost
+#              ONLY so it is never reachable from the router/Wi-Fi network.
+#   app      : Node + Express + Socket.IO. Serves the monitor, controller,
+#              results, admin, and staff pages, and the /api/stats endpoints.
+#   grafana  : the "engineer view". Reads JSON from the app's /api/stats
+#              endpoints through the Infinity data source (no MongoDB
+#              Enterprise plugin needed).
+#
+# Works the same on a Raspberry Pi 5 (arm64) and a laptop (amd64): all three
+# images are official and multi-arch.
+# ===========================================================================
+
+services:
+  mongo:
+    image: mongo:8
+    container_name: datawall-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
+      # These two are read by docker/mongo-init.js (not by Mongo itself) to
+      # create the limited application user on first start.
+      MONGO_APP_USERNAME: ${MONGO_APP_USERNAME}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD}
+      MONGO_DB: ${MONGO_DB}
+    # SECURITY: bind to loopback only. The game table is on an open Wi-Fi
+    # router with no password — the database must not be reachable from it.
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    image: stem-data-wall-app:latest
+    container_name: datawall-app
+    restart: unless-stopped
+    environment:
+      MONGO_URI: ${MONGO_URI}
+      MONGO_DB: ${MONGO_DB}
+      ADMIN_PIN: ${ADMIN_PIN}
+      STATION: ${STATION:-table-1}
+      PORT: "3000"
+    ports:
+      - "8080:3000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      # Edit questions/team content and drop in attract media without rebuilding.
+      - ./content:/app/content:ro
+      - ./media:/app/media:ro
+
+  grafana:
+    image: grafana/grafana-oss:11.3.0
+    container_name: datawall-grafana
+    restart: unless-stopped
+    environment:
+      # Anonymous, read-only viewing — no login needed on the laptop.
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_USERS_DEFAULT_THEME: light
+      # The Infinity plugin is installed on first (online) start and then
+      # lives in the grafana_plugins volume, so it keeps working with the
+      # internet unplugged. The Ansible "grafana" role pre-pulls it the same way.
+      GF_INSTALL_PLUGINS: yesoreyeram-infinity-datasource
+    ports:
+      - "3000:3000"
+    depends_on:
+      - app
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - grafana_plugins:/var/lib/grafana/plugins
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+
+volumes:
+  mongo_data:
+  grafana_data:
+  grafana_plugins:
