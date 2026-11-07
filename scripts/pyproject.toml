@@ -1,0 +1,20 @@
+# Lets you run the scripts with uv (https://docs.astral.sh/uv/) without a
+# manual virtualenv. From the scripts/ folder:
+#
+#     uv run reset_db.py --help
+#     uv run seed_demo.py --count 200
+#
+# uv reads this file, creates an isolated environment, and installs the deps.
+[project]
+name = "stem-data-wall-scripts"
+version = "1.0.0"
+description = "Reset and seed utilities for the STEM Data Wall database"
+requires-python = ">=3.10"
+dependencies = [
+    "pymongo>=4.6,<5",
+    "python-dotenv>=1.0",
+    "PyYAML>=6.0",
+]
+
+[tool.uv]
+package = false

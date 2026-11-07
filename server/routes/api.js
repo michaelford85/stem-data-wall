@@ -12,7 +12,7 @@ const stats = require("../stats");
 const IMAGE_EXT = new Set([".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp"]);
 const VIDEO_EXT = new Set([".mp4", ".webm"]);
 
-function createApiRouter({ game }) {
+function createApiRouter({ game, broadcastStats }) {
   const router = express.Router();
 
   // ---- PIN check ----------------------------------------------------------
@@ -101,6 +101,13 @@ function createApiRouter({ game }) {
   // Just tells the running app to clear the board and push empty charts live.
   router.post("/admin/reset-notify", requirePin, (_req, res) => {
     game.resetAfterDataWipe();
+    res.json({ ok: true });
+  });
+
+  // Called by scripts/seed_demo.py after inserting events straight into Mongo:
+  // re-broadcast the stats bundle so open charts update live (no board reset).
+  router.post("/admin/refresh", requirePin, (_req, res) => {
+    if (broadcastStats) broadcastStats();
     res.json({ ok: true });
   });
 

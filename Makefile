@@ -65,9 +65,8 @@ reset-board: ## Reset only the game board (used tiles), keep events
 reset-all: ## Drop the DB and recreate the collection + schema + indexes
 	$(PYTHON) scripts/reset_db.py --all --yes
 
-backup-data: ## Export all events to a timestamped JSON file under ./backups
-	$(PYTHON) scripts/reset_db.py --events --backup ./backups --dry-run
-	@echo "Backup written. (Dry-run: no data was deleted.)"
+backup-data: ## Export all events to a timestamped JSON file under ./backups (no delete)
+	$(PYTHON) scripts/reset_db.py --backup ./backups --dry-run
 
 # ---- Full Docker-only teardown ---------------------------------------------
 nuke: ## DESTROY everything: containers, volumes, project images, and .env

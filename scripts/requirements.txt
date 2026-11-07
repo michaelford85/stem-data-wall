@@ -1,0 +1,5 @@
+# Python dependencies for the reset/seed scripts (Python 3.10+).
+# Install with:  pip install -r scripts/requirements.txt
+pymongo>=4.6,<5
+python-dotenv>=1.0
+PyYAML>=6.0

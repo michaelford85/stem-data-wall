@@ -72,7 +72,7 @@ async function main() {
 
   // ---- routes -------------------------------------------------------------
   app.use("/api/stats", createStatsRouter());
-  app.use("/api", createApiRouter({ game }));
+  app.use("/api", createApiRouter({ game, broadcastStats }));
 
   // Serve vendored assets and page assets.
   app.use(express.static(config.paths.public));
