@@ -60,6 +60,9 @@ services:
       # Edit questions/team content and drop in attract media without rebuilding.
       - ./content:/app/content:ro
       - ./media:/app/media:ro
+      # Serve the web pages and vendored assets live (handy for edits; the image
+      # also contains a copy so it still works without the bind mount).
+      - ./public:/app/public:ro
 
   grafana:
     image: grafana/grafana-oss:11.3.0

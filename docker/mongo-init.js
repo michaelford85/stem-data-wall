@@ -24,7 +24,14 @@ try {
   appDb.createUser({
     user: appUser,
     pwd: appPass,
-    roles: [{ role: "readWrite", db: dbName }],
+    // readWrite  -> insert/find/delete events, create the collection + indexes.
+    // dbAdmin     -> apply/update the $jsonSchema validator (collMod) and, for
+    //                scripts/reset_db.py --all, drop + recreate the database.
+    // Both are scoped to THIS database only — never cluster-wide or root.
+    roles: [
+      { role: "readWrite", db: dbName },
+      { role: "dbAdmin", db: dbName },
+    ],
   });
   print(`[mongo-init] created app user '${appUser}' on db '${dbName}'`);
 } catch (e) {

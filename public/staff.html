@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>STEM Data Wall — Staff</title>
+    <link rel="icon" href="/img/icon.svg" />
+    <link rel="stylesheet" href="/css/common.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+  </head>
+  <body>
+    <main class="staff">
+      <h1>👋 Staff hub</h1>
+
+      <div class="card">
+        <h2>Connect the iPad</h2>
+        <p>On the iPad (on the router's Wi-Fi), scan this QR code, then use
+          <em>Share → Add to Home Screen</em> for a full-screen app.</p>
+        <div class="qr-wrap">
+          <div id="qr"></div>
+          <div>
+            <div class="url" id="controller-url">…</div>
+            <p style="margin-top:0.6rem">Lock it with iOS <strong>Guided Access</strong> once the
+              page is open (triple-click the side button).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Screens &amp; tools</h2>
+        <div class="links">
+          <a class="btn-blue" id="l-monitor" href="/" target="_blank">🖥️ Monitor</a>
+          <a class="btn-blue" id="l-controller" href="/controller" target="_blank">📱 Controller</a>
+          <a class="btn-green" id="l-results" href="/results" target="_blank">📊 Results</a>
+          <a class="btn-red" id="l-admin" href="/admin" target="_blank">🔧 Admin</a>
+          <a class="btn-blue" id="l-grafana" href="#" target="_blank">📈 Grafana</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Addresses</h2>
+        <p>If names don't resolve, use the Pi's IP address instead of
+          <code>datawall.local</code>.</p>
+        <ul>
+          <li>Monitor / game: <span class="url" id="a-app">…</span></li>
+          <li>Grafana (engineer view): <span class="url" id="a-grafana">http://datawall.local:3000</span></li>
+        </ul>
+      </div>
+    </main>
+
+    <script src="/vendor/qrcode.min.js"></script>
+    <script src="/js/staff.js"></script>
+  </body>
+</html>

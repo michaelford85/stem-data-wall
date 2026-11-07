@@ -58,13 +58,20 @@ async function ensureCollection() {
     });
     console.log("[db] created 'events' collection with schema validation");
   } else {
-    // Keep the validator in sync with the file (e.g. after an edit).
-    await db.command({
-      collMod: "events",
-      validator,
-      validationLevel: "strict",
-      validationAction: "error",
-    });
+    // Keep the validator in sync with the file (e.g. after an edit). This is
+    // best-effort: if the app user is not allowed to run collMod, log it and
+    // carry on rather than crash-looping — the validator from create-time still
+    // applies.
+    try {
+      await db.command({
+        collMod: "events",
+        validator,
+        validationLevel: "strict",
+        validationAction: "error",
+      });
+    } catch (err) {
+      console.warn(`[db] could not update validator (keeping existing): ${err.message}`);
+    }
   }
 
   const events = db.collection("events");

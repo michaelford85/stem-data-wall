@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>STEM Data Wall — Admin</title>
+    <link rel="icon" href="/img/icon.svg" />
+    <link rel="stylesheet" href="/css/common.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+  </head>
+  <body>
+    <div id="reconnect"><div class="spinner"></div><div>Reconnecting…</div></div>
+
+    <main class="admin">
+      <h1>🔧 Admin</h1>
+
+      <!-- PIN gate -->
+      <form id="pin-form" class="card">
+        <label for="pin">Enter admin PIN</label>
+        <input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" />
+        <button type="submit">Unlock</button>
+        <div id="pin-error" class="error" hidden>Wrong PIN — try again.</div>
+      </form>
+
+      <!-- Panel (hidden until unlocked) -->
+      <section id="panel" hidden>
+        <div class="card totals">
+          <h2>Totals</h2>
+          <div class="totals-grid" id="totals">…</div>
+        </div>
+
+        <div class="card">
+          <h2>Game board</h2>
+          <p>Clear the used tiles so a new group starts fresh. (Keeps all data.)</p>
+          <button id="reset-board" class="btn-blue">Reset board</button>
+          <span id="board-msg" class="msg"></span>
+        </div>
+
+        <div class="card">
+          <h2>Export</h2>
+          <p>Download aggregate answer counts (no personal data) as a CSV.</p>
+          <a id="export" class="btn-green" href="#">Download CSV</a>
+        </div>
+
+        <div class="card danger">
+          <h2>Danger zone</h2>
+          <p>Delete <strong>all</strong> collected events. This cannot be undone.</p>
+          <button id="reset-data" class="btn-red">Reset all data…</button>
+          <span id="data-msg" class="msg"></span>
+        </div>
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/socket-util.js"></script>
+    <script src="/js/admin.js"></script>
+  </body>
+</html>
