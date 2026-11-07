@@ -1,0 +1,273 @@
+---
+# ===========================================================================
+# Remove everything site.yml created, in reverse order, returning the Pi to
+# roughly its pre-provisioning state. Idempotent and safe to run more than once.
+#
+# SAFETY: refuses to run unless you pass -e confirm_teardown=yes.
+#
+#   ansible-playbook -i inventory.ini teardown.yml -e confirm_teardown=yes
+#
+# Default scope removes the app (containers + volumes), kiosk, and the repo.
+# Opt into deeper removal:
+#   -e teardown_purge_kiosk_packages=true   # also remove cage + Chromium
+#   -e teardown_purge_docker=true           # also remove Docker Engine + repo
+#   -e teardown_revert_system=true          # restore hostname + avahi/hosts
+#   -e teardown_backup=false                # skip the pre-teardown backup
+#
+# Tear down just one component with tags, e.g.:
+#   ... teardown.yml -e confirm_teardown=yes --tags kiosk
+# Tags: app, kiosk, buttons, grafana, docker, system.
+# ===========================================================================
+- name: Tear down the STEM Data Wall
+  hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    confirm_teardown: ""
+    state_dir: /etc/stem-data-wall
+    compose_project: "{{ install_dir | basename }}"
+
+  pre_tasks:
+    - name: Refuse to run without confirm_teardown=yes
+      ansible.builtin.assert:
+        that: confirm_teardown == 'yes'
+        fail_msg: >-
+          Refusing to tear down. Re-run with -e confirm_teardown=yes
+          (see the comments at the top of this file for options).
+      tags: [always]
+
+    - name: Summarize what will be removed, then wait for ENTER
+      ansible.builtin.pause:
+        prompt: |
+          About to REMOVE the STEM Data Wall from {{ inventory_hostname }}:
+            - docker compose down -v  (DELETES MongoDB + Grafana data volumes)
+            - the built app image, kiosk + buttons services, kiosk user, autologin
+            - the repo at {{ install_dir }} (code, .env, provisioning, backups)
+          Deeper (only if enabled):
+            - purge kiosk packages (cage + Chromium): {{ teardown_purge_kiosk_packages }}
+            - purge Docker Engine + repo:             {{ teardown_purge_docker }}
+            - revert hostname + avahi/hosts:          {{ teardown_revert_system }}
+          Backup events to the laptop first: {{ teardown_backup }}
+
+          Press ENTER to continue, or Ctrl-C then A to abort.
+      tags: [always]
+
+  tasks:
+    # ---- 0) back up events to the laptop first -----------------------------
+    - name: Back up before teardown
+      when: teardown_backup | bool
+      tags: [app, backup]
+      block:
+        - name: Check the reset script is present
+          ansible.builtin.stat:
+            path: "{{ install_dir }}/scripts/reset_db.py"
+          register: td_reset_script
+
+        - name: Export events to a JSON backup on the Pi
+          ansible.builtin.command: >-
+            python3 {{ install_dir }}/scripts/reset_db.py
+            --backup {{ install_dir }}/backups --dry-run
+          args:
+            chdir: "{{ install_dir }}"
+          changed_when: false
+          failed_when: false
+          when: td_reset_script.stat.exists
+
+        - name: Find the backup files
+          ansible.builtin.find:
+            paths: "{{ install_dir }}/backups"
+            patterns: "events-*.json"
+          register: td_backups
+          when: td_reset_script.stat.exists
+
+        - name: Fetch backups to the laptop (./backups/)
+          ansible.builtin.fetch:
+            src: "{{ item.path }}"
+            dest: ./backups/
+            flat: true
+          loop: "{{ td_backups.files | default([]) }}"
+          loop_control:
+            label: "{{ item.path | basename }}"
+          when: td_reset_script.stat.exists
+
+    # ---- 1) buttons --------------------------------------------------------
+    - name: Tear down the GPIO buttons service
+      tags: [buttons]
+      block:
+        - name: Check for the buttons unit
+          ansible.builtin.stat:
+            path: /etc/systemd/system/stem-data-wall-buttons.service
+          register: td_buttons_unit
+
+        - name: Stop and disable the buttons service
+          ansible.builtin.systemd_service:
+            name: stem-data-wall-buttons
+            state: stopped
+            enabled: false
+          when: td_buttons_unit.stat.exists
+          failed_when: false
+
+        - name: Remove the buttons unit file
+          ansible.builtin.file:
+            path: /etc/systemd/system/stem-data-wall-buttons.service
+            state: absent
+          notify: Reload systemd
+
+    # ---- 2) kiosk ----------------------------------------------------------
+    - name: Tear down the kiosk
+      tags: [kiosk]
+      block:
+        - name: Remove the tty1 autologin override
+          ansible.builtin.file:
+            path: /etc/systemd/system/getty@tty1.service.d/override.conf
+            state: absent
+          notify:
+            - Reload systemd
+            - Restart getty on tty1
+
+        - name: Remove the override directory
+          ansible.builtin.file:
+            path: /etc/systemd/system/getty@tty1.service.d
+            state: absent
+
+        - name: Remove the kiosk user and home directory
+          ansible.builtin.user:
+            name: "{{ kiosk_user }}"
+            state: absent
+            remove: true
+            force: true
+          failed_when: false
+
+        - name: Release the Chromium snap refresh hold (Ubuntu)
+          ansible.builtin.command: snap refresh --unhold chromium
+          changed_when: false
+          failed_when: false
+          when: ansible_facts['distribution'] == 'Ubuntu'
+
+    - name: Purge kiosk packages (cage + Chromium)
+      when: teardown_purge_kiosk_packages | bool
+      tags: [kiosk]
+      block:
+        - name: Remove cage
+          ansible.builtin.apt:
+            name: cage
+            state: absent
+            purge: true
+
+        - name: Remove the Chromium snap (Ubuntu)
+          ansible.builtin.command: snap remove chromium
+          changed_when: true
+          failed_when: false
+          when: ansible_facts['distribution'] == 'Ubuntu'
+
+        - name: Remove the Chromium package (Debian / Pi OS)
+          ansible.builtin.apt:
+            name: chromium
+            state: absent
+            purge: true
+          when: ansible_facts['distribution'] != 'Ubuntu'
+
+    # ---- 3) grafana + app stack -------------------------------------------
+    - name: Check for the compose file
+      ansible.builtin.stat:
+        path: "{{ install_dir }}/docker-compose.yml"
+      register: td_compose
+      tags: [app, grafana]
+
+    # compose down affects ALL services; it is how both the grafana data volume
+    # and the mongo data volume are removed.
+    - name: Stop the stack and remove volumes (docker compose down -v)
+      ansible.builtin.command: docker compose down -v --remove-orphans
+      args:
+        chdir: "{{ install_dir }}"
+      when: td_compose.stat.exists
+      changed_when: true
+      tags: [app, grafana]
+
+    - name: Remove the built app image
+      ansible.builtin.command: docker image rm -f {{ compose_project }}-app:latest stem-data-wall-app:latest
+      register: td_rmimg
+      changed_when: "'Untagged' in td_rmimg.stdout or 'Deleted' in td_rmimg.stdout"
+      failed_when: false
+      tags: [app]
+
+    - name: Remove the project directory (code, .env, provisioning, backups)
+      ansible.builtin.file:
+        path: "{{ install_dir }}"
+        state: absent
+      tags: [app]
+
+    # ---- 4) docker engine (optional) --------------------------------------
+    - name: Purge Docker Engine
+      when: teardown_purge_docker | bool
+      tags: [docker]
+      block:
+        - name: Remove Docker packages
+          ansible.builtin.apt:
+            name:
+              - docker-ce
+              - docker-ce-cli
+              - containerd.io
+              - docker-buildx-plugin
+              - docker-compose-plugin
+            state: absent
+            purge: true
+            autoremove: true
+
+        - name: Remove the Docker apt repo
+          ansible.builtin.file:
+            path: /etc/apt/sources.list.d/docker.list
+            state: absent
+
+        - name: Remove the Docker GPG key
+          ansible.builtin.file:
+            path: /etc/apt/keyrings/docker.asc
+            state: absent
+
+    # ---- 5) system revert (optional) --------------------------------------
+    - name: Revert system changes (hostname + hosts)
+      when: teardown_revert_system | bool
+      tags: [system]
+      block:
+        - name: Read the recorded original hostname
+          ansible.builtin.slurp:
+            src: "{{ state_dir }}/original-hostname"
+          register: td_orig_host
+          failed_when: false
+
+        - name: Restore the original hostname
+          ansible.builtin.hostname:
+            name: "{{ td_orig_host.content | b64decode | trim }}"
+          when:
+            - td_orig_host.content is defined
+            - (td_orig_host.content | b64decode | trim) | length > 0
+
+        - name: Restore the /etc/hosts 127.0.1.1 line
+          ansible.builtin.lineinfile:
+            path: /etc/hosts
+            regexp: '^127\.0\.1\.1\b'
+            line: "127.0.1.1\t{{ td_orig_host.content | b64decode | trim }}"
+            state: present
+          when:
+            - td_orig_host.content is defined
+            - (td_orig_host.content | b64decode | trim) | length > 0
+
+        # avahi is a standard package; site.yml only installed + enabled it and
+        # added the hostname above. We restore the hostname/hosts and remove our
+        # state dir. (We leave the avahi package installed so we don't break a
+        # system that shipped with it.)
+        - name: Remove the state directory
+          ansible.builtin.file:
+            path: "{{ state_dir }}"
+            state: absent
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+    - name: Restart getty on tty1
+      ansible.builtin.systemd_service:
+        name: getty@tty1
+        state: restarted
+      failed_when: false

@@ -1,0 +1,44 @@
+---
+# ===========================================================================
+# Run the reset script on the Pi from your laptop.
+#
+#   ansible-playbook -i inventory.ini reset-data.yml                 # events (prompts)
+#   ansible-playbook -i inventory.ini reset-data.yml -e mode=board
+#   ansible-playbook -i inventory.ini reset-data.yml -e mode=all -e confirm_reset=yes
+#
+# mode: events (default) | board | all
+# Pass -e confirm_reset=yes to skip the interactive confirmation.
+# ===========================================================================
+- name: Reset the STEM Data Wall data
+  hosts: all
+  become: true
+  gather_facts: false
+  vars:
+    mode: events
+    confirm_reset: ""
+  tasks:
+    - name: Ask for confirmation (unless confirm_reset=yes)
+      ansible.builtin.pause:
+        prompt: >-
+          About to run reset_db.py --{{ mode }} on {{ inventory_hostname }}.
+          This changes the database. Type 'yes' to continue
+      register: reset_confirm
+      when: confirm_reset != 'yes'
+
+    - name: Stop unless confirmed
+      ansible.builtin.assert:
+        that: (confirm_reset == 'yes') or (reset_confirm.user_input | default('') | trim == 'yes')
+        fail_msg: "Not confirmed — nothing was changed."
+        success_msg: "Confirmed — running reset."
+      when: confirm_reset != 'yes'
+
+    - name: Run reset_db.py --{{ mode }}
+      ansible.builtin.command: "python3 {{ install_dir }}/scripts/reset_db.py --{{ mode }} --yes"
+      args:
+        chdir: "{{ install_dir }}"
+      register: reset_result
+      changed_when: "'Done.' in reset_result.stdout or 'board reset' in reset_result.stdout"
+
+    - name: Show the script output
+      ansible.builtin.debug:
+        var: reset_result.stdout_lines
