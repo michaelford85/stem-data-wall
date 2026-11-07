@@ -1,0 +1,26 @@
+---
+# Optional GPIO arcade-button service. Only does anything when buttons_enabled
+# is true (default false). Posts button presses to the app on localhost.
+
+- name: Set up the GPIO buttons service
+  when: buttons_enabled | bool
+  block:
+    - name: Install gpiozero + lgpio (Pi 5 backend)
+      ansible.builtin.apt:
+        name: "{{ buttons_python_packages }}"
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install the buttons systemd unit
+      ansible.builtin.template:
+        src: buttons.service.j2
+        dest: /etc/systemd/system/stem-data-wall-buttons.service
+        mode: "0644"
+
+    - name: Enable and start the buttons service
+      ansible.builtin.systemd_service:
+        name: stem-data-wall-buttons
+        enabled: true
+        state: started
+        daemon_reload: true

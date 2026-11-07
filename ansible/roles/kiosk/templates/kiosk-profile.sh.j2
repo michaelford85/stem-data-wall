@@ -1,0 +1,10 @@
+# Managed by Ansible (STEM Data Wall kiosk role).
+# Runs at login for the kiosk user. On tty1 only, start the Wayland kiosk
+# compositor (cage) with Chromium pointed at the monitor page, full screen.
+if [ "$(tty)" = "/dev/tty1" ] && [ -z "$WAYLAND_DISPLAY" ]; then
+  # Keep the text console from blanking before cage takes over.
+  setterm -blank 0 -powerdown 0 2>/dev/null || true
+  # cage is a single-app Wayland compositor: no window decorations, no desktop.
+  # Chromium under Wayland hides the pointer when there is no mouse movement.
+  exec cage -- {{ kiosk_chromium_bin }} {{ kiosk_chromium_flags }} {{ kiosk_chromium_extra_flags }} "{{ monitor_url }}"
+fi

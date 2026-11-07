@@ -1,0 +1,21 @@
+---
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
+# Docker publishes separate apt repos for Ubuntu and Debian (Raspberry Pi OS).
+docker_gpg_url_map:
+  Ubuntu: https://download.docker.com/linux/ubuntu/gpg
+  Debian: https://download.docker.com/linux/debian/gpg
+docker_repo_base_map:
+  Ubuntu: https://download.docker.com/linux/ubuntu
+  Debian: https://download.docker.com/linux/debian
+
+# Map Ansible's architecture fact to Docker's apt arch name.
+docker_arch_map:
+  aarch64: arm64
+  x86_64: amd64
+  armv7l: armhf

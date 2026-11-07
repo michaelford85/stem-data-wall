@@ -1,0 +1,45 @@
+---
+# ===========================================================================
+# All tunable settings in one place. Override any of these with -e on the
+# command line, e.g.  ansible-playbook site.yml -e buttons_enabled=true
+# ===========================================================================
+
+# ---- project / repo --------------------------------------------------------
+project_name: stem-data-wall
+repo_url: "https://github.com/michaelford85/stem-data-wall.git"
+repo_version: main
+install_dir: /opt/stem-data-wall
+# Set false for a local run where the code already lives in install_dir
+# (then point install_dir at your checkout).
+app_clone_repo: true
+
+# ---- system ----------------------------------------------------------------
+datawall_hostname: datawall
+timezone: America/Chicago
+station: table-1
+
+# ---- secrets ---------------------------------------------------------------
+# Leave admin_pin empty to auto-generate a random 4-digit PIN into .env the
+# first time (it is printed at the end of the run). MongoDB passwords are
+# always auto-generated into .env and never stored in git.
+admin_pin: ""
+
+# ---- app / grafana ---------------------------------------------------------
+monitor_url: "http://localhost:8080/"
+grafana_plugin: yesoreyeram-infinity-datasource
+
+# ---- kiosk -----------------------------------------------------------------
+kiosk_user: kiosk
+# Extra Chromium flags appended to the kiosk launch command.
+kiosk_chromium_extra_flags: ""
+
+# ---- optional GPIO buttons (off by default) --------------------------------
+buttons_enabled: false
+buttons_pins: [17, 27, 22, 23]
+buttons_app_url: "http://127.0.0.1:8080"
+
+# ---- teardown (used by teardown.yml) --------------------------------------
+teardown_backup: true                 # back up events to the laptop first
+teardown_purge_kiosk_packages: false  # also remove cage + chromium
+teardown_purge_docker: false          # also remove Docker Engine + repo
+teardown_revert_system: false         # restore original hostname + avahi

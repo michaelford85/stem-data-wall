@@ -1,0 +1,84 @@
+---
+# Full-screen Chromium kiosk on tty1 using cage (a tiny Wayland compositor).
+# OS-aware: Chromium is a snap on Ubuntu and an apt package on Raspberry Pi OS.
+
+- name: Determine Chromium install method for this OS
+  ansible.builtin.set_fact:
+    kiosk_is_ubuntu: "{{ ansible_facts['distribution'] == 'Ubuntu' }}"
+
+- name: Set the Chromium binary path
+  ansible.builtin.set_fact:
+    kiosk_chromium_bin: "{{ '/snap/bin/chromium' if kiosk_is_ubuntu else '/usr/bin/chromium' }}"
+
+- name: Install cage (Wayland kiosk compositor)
+  ansible.builtin.apt:
+    name: cage
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+# ---- Chromium (snap on Ubuntu, apt on Debian/Pi OS) ------------------------
+- name: Check whether the Chromium snap is installed (Ubuntu)
+  ansible.builtin.command: snap list chromium
+  register: kiosk_snap_chromium
+  changed_when: false
+  failed_when: false
+  when: kiosk_is_ubuntu
+
+- name: Install Chromium snap (Ubuntu)
+  ansible.builtin.command: snap install chromium
+  when: kiosk_is_ubuntu and kiosk_snap_chromium.rc != 0
+  changed_when: true
+
+- name: Install Chromium package (Debian / Raspberry Pi OS)
+  ansible.builtin.apt:
+    name: chromium
+    state: present
+  when: not kiosk_is_ubuntu
+
+# ---- dedicated kiosk user --------------------------------------------------
+- name: Create the kiosk user
+  ansible.builtin.user:
+    name: "{{ kiosk_user }}"
+    shell: /bin/bash
+    create_home: true
+    password: "!" # no password login; used only via tty1 autologin
+    groups: video,input,tty,render
+    append: true
+
+- name: Install the kiosk login script
+  ansible.builtin.template:
+    src: kiosk-profile.sh.j2
+    dest: "/home/{{ kiosk_user }}/.bash_profile"
+    owner: "{{ kiosk_user }}"
+    group: "{{ kiosk_user }}"
+    mode: "0644"
+
+# ---- tty1 autologin --------------------------------------------------------
+- name: Create the getty@tty1 override directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/getty@tty1.service.d
+    state: directory
+    mode: "0755"
+
+- name: Configure tty1 autologin for the kiosk user
+  ansible.builtin.template:
+    src: getty-override.conf.j2
+    dest: /etc/systemd/system/getty@tty1.service.d/override.conf
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart getty on tty1
+
+# ---- hold snap refreshes during the event (Ubuntu) ------------------------
+- name: Hold Chromium snap refreshes during the event (Ubuntu)
+  ansible.builtin.command: snap refresh --hold chromium
+  register: kiosk_snap_hold
+  changed_when: "'held' in kiosk_snap_hold.stdout"
+  failed_when: false
+  when: kiosk_is_ubuntu
+
+- name: Enable graphical boot target with autologin on tty1
+  ansible.builtin.systemd_service:
+    name: getty@tty1
+    enabled: true

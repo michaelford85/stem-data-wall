@@ -1,0 +1,76 @@
+---
+# Deploy and run the app stack: clone the repo, generate .env (with random
+# secrets) if missing, pre-pull images, and bring the stack up.
+
+- name: Install host Python packages for the reset/seed scripts
+  ansible.builtin.apt:
+    name: "{{ app_host_python_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Clone/update the repository
+  ansible.builtin.git:
+    repo: "{{ repo_url }}"
+    dest: "{{ install_dir }}"
+    version: "{{ repo_version }}"
+  when: app_clone_repo | bool
+
+- name: Ensure the install directory exists (local/no-clone runs)
+  ansible.builtin.file:
+    path: "{{ install_dir }}"
+    state: directory
+    mode: "0755"
+
+# --- .env is generated ONCE with random secrets, then left untouched --------
+- name: Check whether .env already exists
+  ansible.builtin.stat:
+    path: "{{ install_dir }}/.env"
+  register: app_envfile
+
+- name: Generate secrets for a new .env
+  ansible.builtin.set_fact:
+    app_mongo_root_pw: "{{ lookup('ansible.builtin.password', '/dev/null length=24 chars=ascii_letters,digits') }}"
+    app_mongo_app_pw: "{{ lookup('ansible.builtin.password', '/dev/null length=24 chars=ascii_letters,digits') }}"
+    app_admin_pin: "{{ admin_pin if (admin_pin | string | length > 0) else lookup('ansible.builtin.password', '/dev/null length=4 chars=digits') }}"
+  when: not app_envfile.stat.exists
+
+- name: Write .env (only when missing, mode 0600)
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ install_dir }}/.env"
+    mode: "0600"
+  when: not app_envfile.stat.exists
+
+# --- bring the stack up -----------------------------------------------------
+- name: Pre-pull Docker images (so everything works offline later)
+  ansible.builtin.command: docker compose pull
+  args:
+    chdir: "{{ install_dir }}"
+  changed_when: false
+
+- name: Build and start the stack
+  ansible.builtin.command: docker compose up -d --build
+  args:
+    chdir: "{{ install_dir }}"
+  register: app_compose_up
+  changed_when: >-
+    ('Started' in app_compose_up.stderr) or
+    ('Recreate' in app_compose_up.stderr) or
+    ('Created' in app_compose_up.stderr) or
+    ('Built' in app_compose_up.stderr)
+
+# --- show the PIN so staff can unlock /admin --------------------------------
+- name: Read the admin PIN from .env
+  ansible.builtin.slurp:
+    src: "{{ install_dir }}/.env"
+  register: app_env_slurp
+
+- name: Show the admin PIN + URLs
+  ansible.builtin.debug:
+    msg:
+      - "App is up. Admin PIN: {{ (app_env_slurp.content | b64decode | regex_search('ADMIN_PIN=(.*)', '\\1'))[0] }}"
+      - "Monitor:    http://{{ datawall_hostname }}.local:8080/"
+      - "Controller: http://{{ datawall_hostname }}.local:8080/controller"
+      - "Staff:      http://{{ datawall_hostname }}.local:8080/staff"
+      - "Grafana:    http://{{ datawall_hostname }}.local:3000/"

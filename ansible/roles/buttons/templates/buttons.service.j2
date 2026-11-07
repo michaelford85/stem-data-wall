@@ -1,0 +1,16 @@
+# Managed by Ansible (STEM Data Wall buttons role).
+[Unit]
+Description=STEM Data Wall GPIO arcade buttons
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=BUTTON_PINS={{ buttons_pins | join(',') }}
+Environment=APP_URL={{ buttons_app_url }}
+ExecStart=/usr/bin/python3 {{ install_dir }}/gpio/buttons.py
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,5 @@
+# Managed by Ansible (STEM Data Wall kiosk role).
+# Auto-log in the dedicated kiosk user on tty1 so the screen comes up ready.
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin {{ kiosk_user }} --noclear %I $TERM

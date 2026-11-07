@@ -1,0 +1,23 @@
+---
+# ===========================================================================
+# Provision a Raspberry Pi (or any Debian/Ubuntu host) into a STEM Data Wall.
+#
+# Remote (from your laptop):
+#   ansible-playbook -i inventory.ini site.yml
+#
+# Local (on the Pi itself):
+#   ansible-playbook -i localhost, -c local site.yml
+#
+# Enable the optional GPIO buttons:
+#   ansible-playbook -i inventory.ini site.yml -e buttons_enabled=true
+# ===========================================================================
+- name: Provision the STEM Data Wall
+  hosts: all
+  become: true
+  roles:
+    - role: common # hostname, avahi, timezone, base packages
+    - role: docker # Docker Engine + compose plugin
+    - role: app # clone repo, generate .env, compose up, pre-pull images
+    - role: grafana # Infinity plugin + provisioning, persisted offline
+    - role: kiosk # cage + Chromium full-screen on tty1
+    - role: buttons # GPIO service (only runs when buttons_enabled=true)

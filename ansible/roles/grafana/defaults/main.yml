@@ -1,0 +1,4 @@
+---
+# The Grafana Infinity data source reads the app's /api/stats JSON endpoints.
+# (We deliberately do NOT use Grafana's Enterprise MongoDB data source.)
+grafana_plugin: yesoreyeram-infinity-datasource

@@ -1,0 +1,32 @@
+---
+# Make the Infinity plugin persist OFFLINE and (re)load the provisioned
+# datasource + dashboard.
+#
+# The grafana image, its data, and its plugins live in named Docker volumes
+# (pre-pulled/installed here while online), so disconnecting the internet later
+# does not remove them. The datasource + dashboard come from
+# grafana/provisioning/ in the repo (mounted read-only by docker-compose).
+
+- name: Confirm the Grafana provisioning files are present
+  ansible.builtin.stat:
+    path: "{{ install_dir }}/grafana/provisioning/datasources"
+  register: grafana_prov
+  failed_when: not grafana_prov.stat.exists
+
+- name: Install the Infinity plugin into the persistent plugins volume
+  ansible.builtin.command: >-
+    docker compose exec -T grafana grafana cli plugins install {{ grafana_plugin }}
+  args:
+    chdir: "{{ install_dir }}"
+  register: grafana_plugin_install
+  changed_when: "'Installed' in grafana_plugin_install.stdout"
+  # Treat "already installed" as success so the role is idempotent.
+  failed_when: >-
+    grafana_plugin_install.rc != 0 and
+    ('already installed' not in (grafana_plugin_install.stdout + grafana_plugin_install.stderr))
+
+- name: Restart Grafana to load the plugin + provisioning
+  ansible.builtin.command: docker compose restart grafana
+  args:
+    chdir: "{{ install_dir }}"
+  changed_when: true

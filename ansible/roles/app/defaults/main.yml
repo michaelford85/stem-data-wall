@@ -1,0 +1,7 @@
+---
+# Host Python packages so scripts/reset_db.py + seed_demo.py run on the Pi
+# directly (the app itself runs in Docker and needs none of these).
+app_host_python_packages:
+  - python3-pymongo
+  - python3-yaml
+  - python3-dotenv
