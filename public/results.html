@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>STEM Data Wall — Results</title>
+    <link rel="icon" href="/img/icon.svg" />
+    <link rel="stylesheet" href="/css/common.css" />
+    <link rel="stylesheet" href="/css/results.css" />
+  </head>
+  <body>
+    <div id="reconnect"><div class="spinner"></div><div>Reconnecting…</div></div>
+
+    <header class="r-head">
+      <h1>📊 Live Results</h1>
+      <div class="r-count">Data points: <span id="r-count">0</span></div>
+    </header>
+
+    <section class="r-summary">
+      <div class="r-card"><div class="r-title">Most popular categories</div><div id="c-category" class="r-chart"></div></div>
+      <div class="r-card"><div class="r-title">Percent correct per category</div><div id="c-correct" class="r-chart"></div></div>
+      <div class="r-card"><div class="r-title">Answers over time</div><div id="c-time" class="r-chart"></div></div>
+    </section>
+
+    <h2 class="r-sub">How everyone answered each question</h2>
+    <section id="r-questions" class="r-questions"></section>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/vendor/echarts.min.js"></script>
+    <script src="/js/socket-util.js"></script>
+    <script src="/js/charts.js"></script>
+    <script src="/js/results.js"></script>
+  </body>
+</html>

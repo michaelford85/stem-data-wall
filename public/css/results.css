@@ -1,0 +1,65 @@
+/* Results page: scrollable dashboard of live ECharts. Readable on a laptop. */
+body {
+  background: #f1f5f9;
+  min-height: 100vh;
+}
+.r-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: #fff;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.r-head h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+.r-count {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.r-count span {
+  color: var(--c-data);
+}
+
+.r-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+}
+.r-sub {
+  padding: 0 1.5rem;
+  margin: 0.5rem 0;
+}
+.r-questions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem;
+  padding: 0 1.5rem 2rem;
+}
+.r-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 0.8rem;
+}
+.r-title {
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 0.4rem;
+}
+.r-chart {
+  width: 100%;
+  height: 280px;
+}
+
+@media (max-width: 900px) {
+  .r-summary {
+    grid-template-columns: 1fr;
+  }
+}

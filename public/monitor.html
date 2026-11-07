@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>STEM Data Wall — Monitor</title>
+    <link rel="icon" href="/img/icon.svg" />
+    <link rel="stylesheet" href="/css/common.css" />
+    <link rel="stylesheet" href="/css/monitor.css" />
+  </head>
+  <body class="no-select">
+    <!-- Shown when Socket.IO drops -->
+    <div id="reconnect"><div class="spinner"></div><div>Reconnecting…</div></div>
+
+    <!-- BOARD VIEW (crowd sees the Jeopardy board) -->
+    <section id="board" class="view">
+      <header class="board-head">
+        <h1>🧩 STEM Data Wall</h1>
+        <div class="counter">Data points collected today: <span id="board-count">0</span></div>
+      </header>
+      <div id="board-grid" class="board-grid"></div>
+    </section>
+
+    <!-- PLAY VIEW (question / reveal / mystery) -->
+    <section id="play" class="view" hidden>
+      <div id="play-inner"></div>
+    </section>
+
+    <!-- ATTRACT VIEW (idle loop) -->
+    <section id="attract" class="view" hidden>
+      <div id="attract-inner"></div>
+    </section>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/vendor/echarts.min.js"></script>
+    <script src="/js/socket-util.js"></script>
+    <script src="/js/charts.js"></script>
+    <script src="/js/monitor.js"></script>
+  </body>
+</html>

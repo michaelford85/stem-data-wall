@@ -1,0 +1,32 @@
+/* Fredoka — a friendly, rounded display font, self-hosted for full offline use.
+   Downloaded from Fontsource (@fontsource/fredoka). Licensed under the SIL Open
+   Font License 1.1. See ../README.md for details. */
+
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fredoka-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fredoka-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("fredoka-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fredoka-700.woff2") format("woff2");
+}

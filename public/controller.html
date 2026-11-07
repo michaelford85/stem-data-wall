@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- No pinch-zoom; full-screen when added to the Home Screen. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <title>STEM Data Wall — Play!</title>
+
+    <!-- Add to Home Screen (iOS + Android) -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Data Wall" />
+    <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" />
+    <link rel="icon" href="/img/icon.svg" />
+
+    <link rel="stylesheet" href="/css/common.css" />
+    <link rel="stylesheet" href="/css/controller.css" />
+  </head>
+  <body class="no-select">
+    <div id="reconnect"><div class="spinner"></div><div>Reconnecting…</div></div>
+    <main id="app"></main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/socket-util.js"></script>
+    <script src="/js/controller.js"></script>
+  </body>
+</html>
