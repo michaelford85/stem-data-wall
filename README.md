@@ -78,14 +78,15 @@ From your laptop (on the same network as the Pi):
 ```bash
 cd ansible
 cp inventory.example.ini inventory.ini   # edit the Pi's host + user
-ansible-galaxy collection install -r requirements.yml  # Galaxy deps (if any)
+ansible-galaxy collection install -r requirements.yml  # installs community.general
 ansible-playbook -i inventory.ini site.yml
 ```
 
-> This project uses only `ansible-core` (every module is `ansible.builtin`), so
-> `requirements.yml` currently lists no extra collections — the install step is
-> harmless and kept so setup stays correct if a dependency is ever added. You
-> need **ansible-core ≥ 2.17** (`pip install "ansible-core>=2.17"`).
+> You need **ansible-core ≥ 2.17** (`pip install "ansible-core>=2.17"`) for the
+> `ansible.builtin.systemd_service` module. `requirements.yml` lists the
+> `community.general` collection (pinned `>=8.0.0`); `ansible.cfg` sets
+> `collections_path = collections`, so the install step above drops it into
+> `ansible/collections/` (git-ignored) rather than a shared system path.
 
 To run it **on the Pi itself** instead (no SSH):
 

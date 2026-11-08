@@ -14,6 +14,9 @@ data/
 # Ansible Inventory
 ansible/inventory.ini
 
+# Ansible Galaxy collections installed via requirements.yml (collections_path)
+ansible/collections/
+
 # Reset backups produced by scripts/reset_db.py --backup
 backups/
 *.backup.json
