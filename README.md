@@ -50,6 +50,38 @@ never using `latest`.
 | **Admin** | `/admin` | PIN-protected: reset the board, reset data, view totals, export CSV. |
 | **Staff** | `/staff` | Laptop hub: QR code for the iPad + links to everything, including Grafana. |
 
+Here's what the data-facing screens look like with demo data loaded.
+
+**Results (`/results`)** — the crowd-facing results page. Every tap on the iPad
+streams in over Socket.IO and these ECharts redraw live: most-popular category,
+percent correct, answers over time, and a per-question breakdown of how everyone
+answered (the ⭐ marks the correct choice). It turns the room's own answers into
+an instant, no-personal-data visualization kids can see themselves in.
+
+![Live Results page showing category bar charts, percent-correct, an answers-over-time line, and per-question answer distributions](docs/images/live-results.webp)
+
+**Admin (`/admin`)** — the PIN-protected control panel. At a glance: total data
+points, tile picks, answers, percent correct, and mystery/AMA topics. From here
+staff **reset the board** for the next group (keeps the data), **export the
+aggregate counts to CSV** (no personal data), or wipe everything in the danger
+zone. This is how you interact with and manage what's been collected during an
+event.
+
+![Admin screen with totals, a Reset board button, a Download CSV export, and a Reset all data danger zone](docs/images/admin.png)
+
+### The engineer dashboard (Grafana)
+
+The same anonymous events feed a **Grafana** dashboard (the *Engineer View*),
+reachable from the staff hub. It's the grown-up, real-world counterpart to the
+kid-facing results page: answers-per-minute trend, most-popular and
+percent-correct-per-category panels, events-by-station, a big total-events stat,
+and a live table of the latest events. Showing it next to the playful monitor is
+a great way to make the point that **the colorful game and a professional
+analytics dashboard are reading the exact same data** — which is what real data
+engineers do.
+
+![Grafana Engineer View dashboard: answers-per-minute time series, category and percent-correct bar gauges, events-by-station, a total-events stat, and a latest-events table](docs/images/grafana-engineer-view.webp)
+
 ---
 
 ## Hardware
@@ -183,6 +215,15 @@ What each value is for:
 ---
 
 ## Exploring the data with MongoDB Compass
+
+All the data lives in a single **MongoDB** collection — `datawall.events` — one
+document per tap. Each document is deliberately tiny and anonymous: the event
+type, the category/question/answer, whether it was correct, which station, and a
+timestamp — and nothing else (the `$jsonSchema` validator rejects any stray
+field). This is where every chart, the admin totals, and the Grafana dashboard
+ultimately read from.
+
+![MongoDB Compass showing the datawall.events collection with anonymous tile_pick, answer, and mystery_topic documents](docs/images/compass-events.webp)
 
 MongoDB's port is bound to **`127.0.0.1` on the Pi on purpose** (see
 [Privacy by design](#-privacy-by-design)), so it is never reachable from the
