@@ -7,6 +7,8 @@
 
 const path = require("path");
 const http = require("http");
+const fs = require("fs");
+const crypto = require("crypto");
 const express = require("express");
 const { Server } = require("socket.io");
 
@@ -16,6 +18,44 @@ const stats = require("./stats");
 const { createGame } = require("./game");
 const { createStatsRouter } = require("./routes/stats");
 const { createApiRouter } = require("./routes/api");
+
+// ---- cache-busting --------------------------------------------------------
+// Browsers (especially the iPad Home Screen web app and the Pi kiosk) were
+// serving STALE JavaScript after a deploy. Two fixes work together:
+//   1) HTML pages are sent with Cache-Control: no-cache (always revalidate).
+//   2) Every local .js/.css URL in those pages gets a ?v=<version> stamp, so a
+//      new deploy changes the URLs and the browser is forced to fetch fresh.
+// The version is a short hash of the current JS/CSS contents (so it changes
+// exactly when an asset changes), or ASSET_VERSION from the environment (e.g.
+// a git SHA passed by Ansible). It is computed once, at startup.
+function computeAssetVersion(dir) {
+  const hash = crypto.createHash("sha256");
+  const walk = (d) => {
+    for (const name of fs.readdirSync(d).sort()) {
+      const p = path.join(d, name);
+      const st = fs.statSync(p);
+      if (st.isDirectory()) walk(p);
+      else if (/\.(js|css)$/.test(name)) {
+        hash.update(name);
+        hash.update(fs.readFileSync(p));
+      }
+    }
+  };
+  try {
+    walk(dir);
+  } catch (err) {
+    return "dev";
+  }
+  return hash.digest("hex").slice(0, 10);
+}
+
+const ASSET_VERSION = process.env.ASSET_VERSION || computeAssetVersion(config.paths.public);
+
+// Read an HTML page and stamp ?v=<version> onto its local .js/.css references.
+function renderPage(file) {
+  const html = fs.readFileSync(path.join(config.paths.public, file), "utf8");
+  return html.replace(/(\s(?:src|href)=")(\/[^"?#]+\.(?:js|css))"/g, `$1$2?v=${ASSET_VERSION}"`);
+}
 
 async function main() {
   await db.connect();
@@ -79,8 +119,16 @@ async function main() {
   // Expose media (team photos + attract drop-ins) read-only.
   app.use("/media", express.static(config.paths.media));
 
-  // Pages (each is a small static HTML file in public/).
-  const page = (file) => (_req, res) => res.sendFile(path.join(config.paths.public, file));
+  // Pages (each is a small HTML file in public/). Rendered once at startup with
+  // ?v=<version> stamped onto its assets, and served with Cache-Control:
+  // no-cache so browsers always revalidate the HTML and see the new asset URLs.
+  const page = (file) => {
+    const html = renderPage(file);
+    return (_req, res) => {
+      res.set("Cache-Control", "no-cache");
+      res.type("html").send(html);
+    };
+  };
   app.get("/", page("monitor.html"));
   app.get("/controller", page("controller.html"));
   app.get("/results", page("results.html"));
