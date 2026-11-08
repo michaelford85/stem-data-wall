@@ -121,6 +121,98 @@ removes everything (asks first).
 
 ---
 
+## Finding your credentials on the Pi
+
+Ansible installs the project on the Pi at **`/opt/stem-data-wall`** — the
+`install_dir` variable in
+[`ansible/group_vars/all.yml`](ansible/group_vars/all.yml), which you can
+override with `-e install_dir=/your/path`. On the first provision it generates
+the Pi's **`/opt/stem-data-wall/.env`** with its own **random admin PIN** and
+**random MongoDB passwords**.
+
+> ⚠️ **This is not the same `.env` as a local dev checkout.** A laptop or dev
+> server running `docker compose` (Option B above) has its *own* `.env` with
+> *different* values. When you connect to the **Pi**, always read the **Pi's**
+> copy — a PIN or password from your laptop's `.env` will not work against the Pi.
+
+Read the Pi's credentials from your laptop over SSH:
+
+```bash
+ssh <user>@<pi-host> 'sudo grep -E "ADMIN_PIN|MONGO_ROOT|MONGO_APP" /opt/stem-data-wall/.env'
+```
+
+If the stack was installed somewhere else, ask Docker where its folder is:
+
+```bash
+docker inspect datawall-app --format '{{ index .Config.Labels "com.docker.compose.project.working_dir" }}'
+```
+
+What each value is for:
+
+| Variable | What it is |
+| --- | --- |
+| `ADMIN_PIN` | Unlocks the `/admin` page (reset board/data, totals, CSV export). |
+| `MONGO_ROOT_USERNAME` / `MONGO_ROOT_PASSWORD` | Full MongoDB admin. Authenticates against the **`admin`** database. Use this for Compass. |
+| `MONGO_APP_USERNAME` / `MONGO_APP_PASSWORD` | The least-privilege user the app and scripts use. Authenticates against **`MONGO_DB`** (the `datawall` database). |
+| `MONGO_URI` | The app's connection string. It uses the Docker **service name `mongo`**, which only resolves **inside** the Docker network — not from your laptop. |
+
+> **Changed `.env` and now authentication fails?** MongoDB creates the root and
+> app users **only the first time its data volume initializes.** Editing the
+> passwords in `.env` afterward does **not** update the database, so auth fails
+> until you reset the data — `scripts/reset_db.py --all` (or
+> `ansible-playbook reset-data.yml -e mode=all -e confirm_reset=yes`) — or tear
+> the stack down and rebuild it.
+
+---
+
+## Exploring the data with MongoDB Compass
+
+MongoDB's port is bound to **`127.0.0.1` on the Pi on purpose** (see
+[Privacy by design](#-privacy-by-design)), so it is never reachable from the
+open Wi-Fi. To browse the data with
+[MongoDB Compass](https://www.mongodb.com/products/compass), connect through an
+**SSH tunnel**.
+
+**Recommended — a terminal tunnel.** In one terminal, forward a local port to
+the Pi's MongoDB and leave it running:
+
+```bash
+ssh -N -L 27018:127.0.0.1:27017 -i <your-key> <user>@<pi-host>
+```
+
+Then in Compass, connect with:
+
+- **Host:** `localhost:27018`
+- **Authentication:** Username / Password — the **`MONGO_ROOT_USERNAME`** and
+  **`MONGO_ROOT_PASSWORD`** from the **Pi's** `.env`
+- **Authentication Database:** `admin`
+- **Proxy/SSH:** None   •   **TLS/SSL:** Off
+
+Using local port **27018** (not 27017) avoids clashing with a MongoDB already
+running on your laptop.
+
+**Alternative — let Compass make the tunnel.** Use Compass's built-in
+**"SSH with Identity File"** option (Mongo host `127.0.0.1:27017`, plus your Pi
+user and key) instead of the terminal command.
+
+**Troubleshooting Compass:**
+
+- **macOS `EHOSTUNREACH` even though `ssh` works.** Compass's **Local Network**
+  privacy permission can go stale after an app update. Toggle *MongoDB Compass*
+  off and on in **System Settings → Privacy & Security → Local Network** and
+  restart Compass — or just use the terminal tunnel above, which avoids the
+  issue entirely.
+- **"Authentication failed."** Usually the credentials came from the **wrong
+  `.env`** (a laptop's instead of the Pi's), or the **Authentication Database**
+  is wrong (root user → `admin`, app user → `datawall`).
+
+> 💡 **For teachers:** open the `events` collection's **Validation** tab in
+> Compass to *show* the `$jsonSchema` that makes storing personal data
+> impossible — a live demonstration of privacy by design. Treat Compass as
+> **read-only** during an event.
+
+---
+
 ## Editing the game (no code changes)
 
 Everything kids see lives in two plain-text files you can edit with any editor:
@@ -323,6 +415,16 @@ ansible-playbook -i inventory.ini site.yml
   automatically when the network returns.
 - **Grafana panel empty?** Confirm the Infinity plugin is installed and that
   Grafana can reach the app at `http://app:3000` (same Docker network).
+- **`permission denied while trying to connect to the Docker API`?** The
+  playbook adds your login user to the `docker` group, but group membership only
+  takes effect in a **new login session**. Log out and back in, close any
+  multiplexed SSH connection with `ssh -O exit <user>@<pi-host>`, or just use
+  `sudo docker` for now.
+- **Running Ansible *on the Pi* instead of the laptop?** A remote run uses the
+  laptop's SSH key to reach the Pi; on the Pi there is no such hop, so use
+  `-c local` (e.g. `ansible-playbook -i localhost, -c local site.yml`).
+- **Ad-hoc inventory needs a trailing comma.** When you pass hosts inline, the
+  comma is required: `-i 'ubuntu-server-5.local,'` (or `-i localhost,`).
 
 ---
 

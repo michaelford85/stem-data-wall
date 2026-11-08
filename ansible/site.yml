@@ -21,3 +21,43 @@
     - role: grafana # Infinity plugin + provisioning, persisted offline
     - role: kiosk # cage + Chromium full-screen on tty1
     - role: buttons # GPIO service (only runs when buttons_enabled=true)
+
+  post_tasks:
+    # Final, authoritative summary: where the credentials live and how to reach
+    # them. Prints only the admin PIN (never the MongoDB passwords) and points
+    # at the Pi's own .env for the rest.
+    - name: Read the generated .env for the final summary
+      ansible.builtin.slurp:
+        src: "{{ install_dir }}/.env"
+      register: site_env
+      changed_when: false
+
+    - name: Show the setup summary (URLs, PIN, where to find credentials)
+      vars:
+        pi_user: "{{ ansible_user | default('<user>') }}"
+        pi_host: "{{ ansible_host | default(inventory_hostname) }}"
+        admin_pin: "{{ (site_env.content | b64decode | regex_search('ADMIN_PIN=(.*)', '\\1'))[0] }}"
+      ansible.builtin.debug:
+        msg: |-
+          ============================================================
+          STEM Data Wall is ready on {{ inventory_hostname }}.
+
+          Open it:
+            Monitor:   http://{{ datawall_host }}:8080/
+            Staff hub: http://{{ datawall_host }}:8080/staff
+            Grafana:   http://{{ datawall_host }}:3000/
+
+          Admin PIN (for /admin): {{ admin_pin }}
+
+          All credentials live in the Pi's OWN .env (not a laptop's):
+            {{ install_dir }}/.env
+
+          Read the PIN + MongoDB passwords from your laptop:
+            ssh {{ pi_user }}@{{ pi_host }} 'sudo grep -E "ADMIN_PIN|MONGO_ROOT|MONGO_APP" {{ install_dir }}/.env'
+
+          Browse the database in MongoDB Compass (MongoDB is bound to
+          127.0.0.1 for privacy, so open an SSH tunnel first):
+            ssh -N -L 27018:127.0.0.1:27017 {{ pi_user }}@{{ pi_host }}
+          then connect Compass to localhost:27018 as the MONGO_ROOT user
+          (Authentication Database: admin). See the README for details.
+          ============================================================
