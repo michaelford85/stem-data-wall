@@ -400,7 +400,7 @@ You can also bake it into a full provision with
 | `make reset-all` / `reset_db.py --all` | Drop the DB; recreate collection + schema + indexes |
 | `make backup-data` / `reset_db.py --backup PATH` | Export events to timestamped JSON (no deletion) |
 | `ansible/reset-data.yml` | Run a reset on the Pi from the laptop (`-e mode=events\|board\|all`) |
-| `ansible/teardown.yml` | Remove everything `site.yml` created (needs `-e confirm_teardown=yes`) |
+| `ansible/teardown.yml` | Remove what `site.yml` created (needs `-e confirm_teardown=yes`); see [Tearing down the Pi](#tearing-down-the-pi) for the full cleanup |
 | `make nuke` | Docker-only teardown: `compose down -v --rmi local` + remove `.env` |
 
 After a reset, the running app clears the monitor, results page, and iPad
@@ -424,6 +424,46 @@ ansible-playbook -i inventory.ini seed-data.yml -e if_empty=true  # only if the 
 Tunables (all optional, override with `-e`): `count`, `minutes`, `correct_rate`,
 `mystery_rate`, `stations`, `if_empty`. The charts update live after seeding.
 
+### Tearing down the Pi
+
+`ansible/teardown.yml` refuses to run without `-e confirm_teardown=yes`. By
+default it backs up events to your laptop first, then removes **what `site.yml`
+created at the app level**: it stops the stack and deletes its Docker volumes
+(so the MongoDB data is gone), removes the built app image and the project
+directory in `install_dir` (code, `.env`, provisioning, backups), removes the
+kiosk autologin, the `kiosk` user, and the GPIO buttons service, and re-enables
+the background apt updates. It deliberately **leaves the base system alone** —
+Docker Engine, the cage + Chromium packages, and avahi all stay installed:
+
+```bash
+# Default teardown: remove the app + kiosk + data volumes, keep the base system
+ansible-playbook -i inventory.ini teardown.yml -e confirm_teardown=yes
+```
+
+For a **full cleanup** — returning the machine close to its pre-provision state
+— add the three purge flags. On top of the default teardown this also removes
+cage + Chromium, uninstalls Docker Engine, and stops/disables avahi and removes
+the state directory:
+
+```bash
+# Full cleanup: also purge kiosk packages, Docker, and revert system changes
+ansible-playbook -i inventory.ini teardown.yml -e confirm_teardown=yes \
+  -e teardown_purge_kiosk_packages=true \
+  -e teardown_purge_docker=true \
+  -e teardown_revert_system=true
+```
+
+| Flag (pass with `-e`) | Default | Effect when `true` |
+| --- | --- | --- |
+| `confirm_teardown=yes` | *required* | Without it, the playbook refuses to run |
+| `teardown_backup` | `true` | Export events to a JSON backup and fetch it to `./backups/` first; set `false` to skip |
+| `teardown_purge_kiosk_packages` | `false` | Also uninstall cage + Chromium |
+| `teardown_purge_docker` | `false` | Also uninstall Docker Engine (packages, apt repo, GPG key) |
+| `teardown_revert_system` | `false` | Also stop/disable avahi and remove the state directory (the avahi package stays installed) |
+
+You can also target one layer with tags, e.g.
+`teardown.yml -e confirm_teardown=yes --tags kiosk`.
+
 ### Full round-trip (provision → use → reset → teardown → rebuild)
 
 ```bash
@@ -437,8 +477,12 @@ ansible-playbook -i inventory.ini reset-data.yml -e mode=all -e confirm_reset=ye
 #    …and seed again for a fresh batch whenever you like (additive)
 ansible-playbook -i inventory.ini seed-data.yml -e count=300
 
-# 3. Tear it all down (backs up to the laptop first)
-ansible-playbook -i inventory.ini teardown.yml -e confirm_teardown=yes
+# 3. Tear it all down (backs up to the laptop first). Add the purge flags for a
+#    full cleanup that also removes Docker, the kiosk packages, and avahi.
+ansible-playbook -i inventory.ini teardown.yml -e confirm_teardown=yes \
+  -e teardown_purge_kiosk_packages=true \
+  -e teardown_purge_docker=true \
+  -e teardown_revert_system=true
 
 # 4. Rebuild from scratch — the Pi works again
 ansible-playbook -i inventory.ini site.yml
