@@ -1,0 +1,28 @@
+---
+# Ansible Galaxy requirements for the STEM Data Wall.
+# Install with:
+#     ansible-galaxy collection install -r ansible/requirements.yml
+#
+# After switching the stdout callback to ansible-core's built-in "default"
+# (with callback_result_format = yaml in ansible.cfg), every task, lookup,
+# filter, and template in this project uses ONLY the ansible.builtin
+# collection, which ships inside ansible-core. A full scan of the roles and
+# playbooks finds no module, plugin, filter, or lookup from community.general,
+# ansible.posix, or any other Galaxy collection.
+#
+# So on a clean machine you only need ansible-core itself:
+#     python3 -m pip install "ansible-core>=2.17"
+# (ansible-core >= 2.17 provides the ansible.builtin.systemd_service module
+# this project uses.)
+#
+# This file is kept, and wired into `make ansible-deps` and the README, so the
+# documented setup step stays correct and future-proof: if a role ever starts
+# using a module from another collection, add it to the list below with a
+# minimum version and the same install command will pull it in. For example:
+#
+#   collections:
+#     - name: community.general
+#       version: ">=8.0.0"
+#
+# For now, no extra collections are required:
+collections: []

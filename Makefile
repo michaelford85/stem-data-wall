@@ -12,7 +12,7 @@ PYTHON  ?= python3
 
 .DEFAULT_GOAL := help
 .PHONY: help up down logs restart build ps reset-data seed-demo \
-        reset-events reset-board reset-all backup-data nuke env
+        reset-events reset-board reset-all backup-data nuke env ansible-deps
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -46,6 +46,10 @@ ps: ## Show container status
 
 logs: ## Follow logs from all containers
 	$(COMPOSE) logs -f --tail=100
+
+# ---- Ansible (Raspberry Pi provisioning) -----------------------------------
+ansible-deps: ## Install Ansible Galaxy collections for the Pi playbooks
+	ansible-galaxy collection install -r ansible/requirements.yml
 
 # ---- Data: seed / reset / backup -------------------------------------------
 # These call the Python scripts. They run on the host and talk to MongoDB on

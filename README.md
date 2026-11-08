@@ -73,9 +73,14 @@ From your laptop (on the same network as the Pi):
 ```bash
 cd ansible
 cp inventory.example.ini inventory.ini   # edit the Pi's host + user
-ansible-galaxy --version                  # ensure Ansible is installed
+ansible-galaxy collection install -r requirements.yml  # Galaxy deps (if any)
 ansible-playbook -i inventory.ini site.yml
 ```
+
+> This project uses only `ansible-core` (every module is `ansible.builtin`), so
+> `requirements.yml` currently lists no extra collections — the install step is
+> harmless and kept so setup stays correct if a dependency is ever added. You
+> need **ansible-core ≥ 2.17** (`pip install "ansible-core>=2.17"`).
 
 To run it **on the Pi itself** instead (no SSH):
 
