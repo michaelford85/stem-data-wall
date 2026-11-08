@@ -36,10 +36,11 @@ event_mode: false
 admin_pin: ""
 
 # ---- app / grafana ---------------------------------------------------------
-# The page the kiosk Chromium opens full-screen. Uses datawall_host so it
-# matches the name shown everywhere else; override with http://localhost:8080/
-# if you prefer the kiosk to avoid mDNS entirely.
-monitor_url: "http://{{ datawall_host }}:8080/"
+# The page the kiosk Chromium opens full-screen, on the Pi itself. Deliberately
+# localhost so the Pi's OWN screen never depends on mDNS resolving. Other
+# devices reach the Pi by datawall_host (<hostname>.local); this URL is only
+# ever used locally on the Pi.
+monitor_url: "http://localhost:8080/"
 grafana_plugin: yesoreyeram-infinity-datasource
 
 # ---- kiosk -----------------------------------------------------------------

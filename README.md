@@ -262,10 +262,12 @@ You can also bake it into a full provision with
 `teardown.yml` always re-enables background updates.
 
 > **A note on the hostname:** this project **never changes the Pi's hostname.**
-> It reaches the Pi at `<your-pi-hostname>.local` (published over mDNS by avahi),
-> and the kiosk URL, Grafana link, and `/staff` QR code all follow from that. If
-> that name doesn't resolve, provision with `-e datawall_host=<the Pi's IP>` and
-> everything uses the IP instead.
+> Other devices reach the Pi at `<your-pi-hostname>.local` (published over mDNS
+> by avahi), and the `/staff` links + QR code, the Grafana link, and the printed
+> summary all follow from that. If that name doesn't resolve, provision with
+> `-e datawall_host=<the Pi's IP>` and those all use the IP instead. The kiosk on
+> the Pi's **own** screen always loads `http://localhost:8080/`, so the big
+> display never depends on mDNS.
 
 ---
 
