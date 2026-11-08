@@ -11,7 +11,7 @@
 # Opt into deeper removal:
 #   -e teardown_purge_kiosk_packages=true   # also remove cage + Chromium
 #   -e teardown_purge_docker=true           # also remove Docker Engine + repo
-#   -e teardown_revert_system=true          # restore hostname + avahi/hosts
+#   -e teardown_revert_system=true          # stop/disable avahi + remove state dir
 #   -e teardown_backup=false                # skip the pre-teardown backup
 #
 # Tear down just one component with tags, e.g.:
@@ -46,7 +46,8 @@
           Deeper (only if enabled):
             - purge kiosk packages (cage + Chromium): {{ teardown_purge_kiosk_packages }}
             - purge Docker Engine + repo:             {{ teardown_purge_docker }}
-            - revert hostname + avahi/hosts:          {{ teardown_revert_system }}
+            - stop/disable avahi + remove state dir:  {{ teardown_revert_system }}
+          Background apt updates are re-enabled either way.
           Backup events to the laptop first: {{ teardown_backup }}
 
           Press ENTER to continue, or Ctrl-C then A to abort.
@@ -224,39 +225,37 @@
             path: /etc/apt/keyrings/docker.asc
             state: absent
 
-    # ---- 5) system revert (optional) --------------------------------------
-    - name: Revert system changes (hostname + hosts)
+    # ---- 5) re-enable background updates ----------------------------------
+    # site.yml (or event-mode.yml) may have paused these for the event. We
+    # always turn them back on at teardown so the Pi behaves normally again.
+    - name: Re-enable background apt updates
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - unattended-upgrades.service
+        - apt-daily.timer
+        - apt-daily-upgrade.timer
+      failed_when: false
+      tags: [system]
+
+    # ---- 6) system revert (optional) --------------------------------------
+    # We never changed the hostname, so there is nothing to restore. This only
+    # undoes the avahi service we enabled and clears any legacy state dir.
+    # (The avahi package itself is left installed — it ships with most systems.)
+    - name: Revert system changes (avahi + state dir)
       when: teardown_revert_system | bool
       tags: [system]
       block:
-        - name: Read the recorded original hostname
-          ansible.builtin.slurp:
-            src: "{{ state_dir }}/original-hostname"
-          register: td_orig_host
+        - name: Stop and disable avahi-daemon
+          ansible.builtin.systemd_service:
+            name: avahi-daemon
+            state: stopped
+            enabled: false
           failed_when: false
 
-        - name: Restore the original hostname
-          ansible.builtin.hostname:
-            name: "{{ td_orig_host.content | b64decode | trim }}"
-          when:
-            - td_orig_host.content is defined
-            - (td_orig_host.content | b64decode | trim) | length > 0
-
-        - name: Restore the /etc/hosts 127.0.1.1 line
-          ansible.builtin.lineinfile:
-            path: /etc/hosts
-            regexp: '^127\.0\.1\.1\b'
-            line: "127.0.1.1\t{{ td_orig_host.content | b64decode | trim }}"
-            state: present
-          when:
-            - td_orig_host.content is defined
-            - (td_orig_host.content | b64decode | trim) | length > 0
-
-        # avahi is a standard package; site.yml only installed + enabled it and
-        # added the hostname above. We restore the hostname/hosts and remove our
-        # state dir. (We leave the avahi package installed so we don't break a
-        # system that shipped with it.)
-        - name: Remove the state directory
+        - name: Remove the state directory (legacy, if present)
           ansible.builtin.file:
             path: "{{ state_dir }}"
             state: absent

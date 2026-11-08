@@ -70,7 +70,7 @@
   ansible.builtin.debug:
     msg:
       - "App is up. Admin PIN: {{ (app_env_slurp.content | b64decode | regex_search('ADMIN_PIN=(.*)', '\\1'))[0] }}"
-      - "Monitor:    http://{{ datawall_hostname }}.local:8080/"
-      - "Controller: http://{{ datawall_hostname }}.local:8080/controller"
-      - "Staff:      http://{{ datawall_hostname }}.local:8080/staff"
-      - "Grafana:    http://{{ datawall_hostname }}.local:3000/"
+      - "Monitor:    http://{{ datawall_host }}:8080/"
+      - "Controller: http://{{ datawall_host }}:8080/controller"
+      - "Staff:      http://{{ datawall_host }}:8080/staff"
+      - "Grafana:    http://{{ datawall_host }}:3000/"

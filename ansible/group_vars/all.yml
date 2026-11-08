@@ -14,9 +14,20 @@ install_dir: /opt/stem-data-wall
 app_clone_repo: true
 
 # ---- system ----------------------------------------------------------------
-datawall_hostname: datawall
+# We do NOT change the Pi's hostname. datawall_host is the name/URL the Pi is
+# reached by: its EXISTING hostname plus ".local" (published over mDNS by
+# avahi). Override with an IP if mDNS is unavailable on your network, e.g.
+#   ansible-playbook site.yml -e datawall_host=192.168.8.10
+datawall_host: "{{ ansible_hostname }}.local"
 timezone: America/Chicago
 station: table-1
+
+# ---- event mode ------------------------------------------------------------
+# Set true (via -e event_mode=true, or ansible/event-mode.yml) to stop and
+# disable unattended-upgrades and the apt-daily timers so nothing grabs the
+# apt lock or restarts services during the event. Re-enable afterward with
+# event-mode.yml -e event_mode=false.
+event_mode: false
 
 # ---- secrets ---------------------------------------------------------------
 # Leave admin_pin empty to auto-generate a random 4-digit PIN into .env the
@@ -25,7 +36,10 @@ station: table-1
 admin_pin: ""
 
 # ---- app / grafana ---------------------------------------------------------
-monitor_url: "http://localhost:8080/"
+# The page the kiosk Chromium opens full-screen. Uses datawall_host so it
+# matches the name shown everywhere else; override with http://localhost:8080/
+# if you prefer the kiosk to avoid mDNS entirely.
+monitor_url: "http://{{ datawall_host }}:8080/"
 grafana_plugin: yesoreyeram-infinity-datasource
 
 # ---- kiosk -----------------------------------------------------------------
@@ -42,4 +56,4 @@ buttons_app_url: "http://127.0.0.1:8080"
 teardown_backup: true                 # back up events to the laptop first
 teardown_purge_kiosk_packages: false  # also remove cage + chromium
 teardown_purge_docker: false          # also remove Docker Engine + repo
-teardown_revert_system: false         # restore original hostname + avahi
+teardown_revert_system: false         # stop/disable avahi + remove state dir

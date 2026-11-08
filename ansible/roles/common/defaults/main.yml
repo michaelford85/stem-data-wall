@@ -9,6 +9,3 @@ common_base_packages:
   - gnupg
   - python3
   - fonts-noto-color-emoji
-
-# Where we record facts (like the original hostname) so teardown can undo them.
-common_state_dir: /etc/stem-data-wall

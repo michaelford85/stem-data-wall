@@ -20,6 +20,11 @@ const config = {
   // Which table this Pi represents. No personal data — just a label.
   station: process.env.STATION || "table-1",
 
+  // Public host name advertised on the /staff page + QR code (e.g.
+  // "datawall.local" or the Pi's <hostname>.local). Written by Ansible from
+  // the datawall_host variable. Empty => fall back to the request's Host header.
+  datawallHost: process.env.DATAWALL_HOST || "",
+
   // PIN that unlocks /admin and authorizes the reset-notify call.
   adminPin: String(process.env.ADMIN_PIN || "1234"),
 

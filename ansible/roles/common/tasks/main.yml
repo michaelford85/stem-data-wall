@@ -1,20 +1,7 @@
 ---
-# Base system setup: hostname, mDNS (datawall.local), timezone, packages.
-
-- name: Create the state directory
-  ansible.builtin.file:
-    path: "{{ common_state_dir }}"
-    state: directory
-    mode: "0755"
-
-# Record the ORIGINAL hostname once, before we change it, so teardown can
-# restore it. force:false means we never overwrite it on later runs.
-- name: Record the original hostname (once, for teardown)
-  ansible.builtin.copy:
-    content: "{{ ansible_facts['hostname'] }}\n"
-    dest: "{{ common_state_dir }}/original-hostname"
-    force: false
-    mode: "0644"
+# Base system setup: mDNS (<hostname>.local), timezone, packages.
+# NOTE: we deliberately do NOT change the Pi's hostname — whatever name the
+# machine already has is kept, and it is reached as "<that hostname>.local".
 
 - name: Install base packages
   ansible.builtin.apt:
@@ -34,20 +21,29 @@
   when: common_current_tz.stdout | trim != timezone
   changed_when: true
 
-- name: Set the hostname to {{ datawall_hostname }}
-  ansible.builtin.hostname:
-    name: "{{ datawall_hostname }}"
-
-- name: Ensure 127.0.1.1 maps to the hostname
-  ansible.builtin.lineinfile:
-    path: /etc/hosts
-    regexp: '^127\.0\.1\.1\b'
-    line: "127.0.1.1\t{{ datawall_hostname }}"
-    state: present
-
-# avahi publishes datawall.local on the local network via mDNS.
-- name: Enable and start avahi-daemon (datawall.local)
+# avahi publishes "<hostname>.local" on the local network via mDNS, so the
+# laptop and iPad can reach the Pi by name without changing the hostname.
+- name: Enable and start avahi-daemon (publishes <hostname>.local)
   ansible.builtin.systemd_service:
     name: avahi-daemon
     enabled: true
     state: started
+
+# ---- event mode (optional): silence background updates --------------------
+# Pass -e event_mode=true to stop and disable unattended-upgrades and the
+# apt-daily timers, so nothing grabs the apt lock or restarts services during
+# the event. Re-enable afterward with: event-mode.yml -e event_mode=false.
+# Guarded so it is harmless where a unit is not installed (e.g. Pi OS).
+- name: Disable background apt updates for the event
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop:
+    - unattended-upgrades.service
+    - apt-daily.timer
+    - apt-daily-upgrade.timer
+    - apt-daily.service
+    - apt-daily-upgrade.service
+  failed_when: false
+  when: event_mode | bool

@@ -1,0 +1,40 @@
+---
+# ===========================================================================
+# Turn "event mode" on or off on the Pi without re-running the whole site.yml.
+#
+# Event mode stops and disables unattended-upgrades and the apt-daily timers so
+# that nothing grabs the apt lock or restarts services while kids are playing.
+#
+#   # Just before the event — quiet all background updates:
+#   ansible-playbook -i inventory.ini event-mode.yml -e event_mode=true
+#
+#   # After the event — allow background updates again:
+#   ansible-playbook -i inventory.ini event-mode.yml -e event_mode=false
+#
+# (Running it with no -e defaults to turning event mode ON.)
+# ===========================================================================
+- name: Toggle event mode
+  hosts: all
+  become: true
+  gather_facts: false
+  vars:
+    event_mode: true
+  tasks:
+    - name: Apply event mode to the background apt-update units
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        state: "{{ 'stopped' if (event_mode | bool) else 'started' }}"
+        enabled: "{{ not (event_mode | bool) }}"
+      loop:
+        - unattended-upgrades.service
+        - apt-daily.timer
+        - apt-daily-upgrade.timer
+      failed_when: false
+
+    - name: Report the resulting state
+      ansible.builtin.debug:
+        msg: >-
+          Event mode is now
+          {{ 'ON — background updates stopped and disabled.'
+             if (event_mode | bool)
+             else 'OFF — background updates re-enabled.' }}

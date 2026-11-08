@@ -85,8 +85,12 @@ sudo ansible-playbook -i localhost, -c local ansible/site.yml
 
 Enable the optional GPIO buttons with `-e buttons_enabled=true`.
 
-When it finishes, open **http://datawall.local:8080/** on the monitor and
-**http://datawall.local:8080/staff** on the laptop. The run prints the admin PIN.
+When it finishes it **prints the exact URLs and the admin PIN**. The Pi keeps
+its existing hostname, so the addresses look like
+**http://&lt;your-pi-hostname&gt;.local:8080/** on the monitor and
+**http://&lt;your-pi-hostname&gt;.local:8080/staff** on the laptop (for a Pi
+named `ubuntu-server-5`, that's `http://ubuntu-server-5.local:8080/`). If mDNS
+names don't resolve on your network, pass `-e datawall_host=<the Pi's IP>`.
 
 ### Option B — with Docker only (a laptop)
 
@@ -233,6 +237,38 @@ kids (and parents) what these jobs actually do:
 
 ---
 
+## Before and after an event
+
+The Pi has no internet at the event, but background OS updates can still wake up,
+grab the apt lock, or restart a service at the worst moment. **Event mode** turns
+those off for the day (it stops and disables `unattended-upgrades` and the
+`apt-daily` / `apt-daily-upgrade` timers).
+
+Just before the event — quiet all background updates:
+
+```bash
+cd ansible
+ansible-playbook -i inventory.ini event-mode.yml -e event_mode=true
+```
+
+Afterward — let the Pi update itself normally again:
+
+```bash
+ansible-playbook -i inventory.ini event-mode.yml -e event_mode=false
+```
+
+You can also bake it into a full provision with
+`ansible-playbook -i inventory.ini site.yml -e event_mode=true`. Running
+`teardown.yml` always re-enables background updates.
+
+> **A note on the hostname:** this project **never changes the Pi's hostname.**
+> It reaches the Pi at `<your-pi-hostname>.local` (published over mDNS by avahi),
+> and the kiosk URL, Grafana link, and `/staff` QR code all follow from that. If
+> that name doesn't resolve, provision with `-e datawall_host=<the Pi's IP>` and
+> everything uses the IP instead.
+
+---
+
 ## Resetting and tearing down
 
 | Tool | What it does |
@@ -271,8 +307,10 @@ ansible-playbook -i inventory.ini site.yml
 
 ## Troubleshooting
 
-- **`datawall.local` won't resolve?** Use the Pi's IP address instead (the
-  `/staff` page shows the addresses), or check that `avahi-daemon` is running.
+- **`<your-pi-hostname>.local` won't resolve?** Use the Pi's IP address instead
+  (the `/staff` page shows the addresses), or check that `avahi-daemon` is
+  running. You can also provision with `-e datawall_host=<the Pi's IP>` so every
+  link and the QR code use the IP.
 - **Charts empty?** Run `make seed-demo` to add demo data, or play a round.
 - **iPad shows "Reconnecting…"?** It lost Wi-Fi to the Pi; it recovers
   automatically when the network returns.

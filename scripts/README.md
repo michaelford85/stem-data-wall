@@ -52,7 +52,7 @@ Clear it afterward with `reset_db.py --events`.
 
 MongoDB is bound to `127.0.0.1` on the Pi, so from another machine either:
 
-- **SSH tunnel:** `ssh -L 27017:127.0.0.1:27017 -L 8080:127.0.0.1:8080 pi@datawall.local`
+- **SSH tunnel:** `ssh -L 27017:127.0.0.1:27017 -L 8080:127.0.0.1:8080 pi@<your-pi-hostname>.local`
   then run the scripts locally (they'll reach the tunneled ports), or
 - **Ansible:** `ansible-playbook -i ansible/inventory.example.ini ansible/reset-data.yml -e mode=events`
   (runs the script on the Pi for you — see the main README).

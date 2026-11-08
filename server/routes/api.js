@@ -37,9 +37,12 @@ function createApiRouter({ game, broadcastStats }) {
     res.json({ team: getTeam() });
   });
 
-  router.get("/config", (_req, res) => {
+  router.get("/config", (req, res) => {
     // Non-secret bits the front-end may want (never the PIN).
-    res.json({ station: config.station });
+    // host: DATAWALL_HOST when set (from Ansible), else the hostname the
+    // request came in on — so /staff links + QR always point somewhere valid.
+    const reqHost = String(req.headers.host || "").split(":")[0];
+    res.json({ station: config.station, host: config.datawallHost || reqHost });
   });
 
   // List any images/videos dropped into media/attract/ for the attract loop.
