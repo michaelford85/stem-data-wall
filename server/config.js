@@ -41,9 +41,11 @@ const config = {
   // Timing (milliseconds) for the monitor's reveal choreography. The SERVER
   // owns these so the game keeps moving even if a screen disconnects.
   timing: {
-    // Reveal card (correct answer + fun fact + a cheer) then the per-question
-    // chart for ~5s, then back to the board.
-    revealMs: 9000,
+    // Reveal card (correct answer + fun fact + a cheer) shown for ~15s so the
+    // room can actually read it, then the per-question chart for ~5s, then back
+    // to the board. Must stay > monitor.js REVEAL_CARD_MS (the card→chart split
+    // lives in the client); the difference is how long the chart shows.
+    revealMs: 20000,
     // AMA "great question!" moment before returning to the board.
     mysteryRevealMs: 6000,
   },

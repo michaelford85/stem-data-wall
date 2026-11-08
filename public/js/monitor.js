@@ -6,7 +6,7 @@
 /* global echarts, createSocket, answerBarOption */
 
 const IDLE_MS = 45000; // show attract after 45s with no activity
-const REVEAL_CARD_MS = 4000; // reveal card, then the per-question chart for ~5s
+const REVEAL_CARD_MS = 15000; // reveal card readable for ~15s, then the per-question chart (keep < server revealMs)
 const ATTRACT_SLIDE_MS = 8000;
 
 // Short, varied encouragement shown on the reveal card. No prizes — just cheer.

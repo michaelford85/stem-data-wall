@@ -19,18 +19,15 @@ technical sales, cybersecurity, and automation**.
 
 ## How it works
 
-```mermaid
-flowchart LR
-  iPad["📱 iPad controller"] -->|"taps (Wi-Fi)"| App
-  Pad["🔢 USB number pad"] --> App
-  Buttons["🕹️ GPIO buttons (optional)"] --> App
-  App["Node app<br/>Express + Socket.IO"] -->|"anonymous events"| Mongo[("MongoDB 8")]
-  Mongo --> Stats{{"/api/stats"}}
-  App --- Stats
-  Stats --> Monitor["🖥️ ECharts monitor"]
-  Stats --> Grafana["📈 Grafana + Infinity"]
-  App -->|"live updates (Socket.IO)"| Monitor
-```
+![How the pieces fit together: an iPad controller sends taps over Wi-Fi to a Raspberry Pi running the app, database and dashboards, which drives a big monitor showing live results](docs/images/architecture.svg)
+
+**The pieces:** kids tap answers on the **iPad** (or a USB number pad / arcade
+buttons). Those taps travel over the Pi's own Wi-Fi to the **Raspberry Pi**,
+which runs everything with no internet — the Node app (Express + Socket.IO), the
+**MongoDB** database that stores one tiny anonymous event per tap, and
+**Grafana**. The app pushes **live results** to the big **monitor** (ECharts)
+the instant each answer comes in, and the same data feeds the `/results` page
+and the Grafana engineer dashboard.
 
 Everything runs **on the Pi, with no internet**. All JavaScript, CSS, fonts,
 emoji, and images are bundled locally; Docker images and the Grafana plugin are
