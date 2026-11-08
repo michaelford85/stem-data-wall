@@ -4,10 +4,15 @@
 Every document respects the SAME $jsonSchema as the real app (no personal data,
 no extra fields), so `reset_db.py --events` clears it exactly like real data.
 
+Re-running ADDS more events (it never deletes), so after a reset you can seed
+again for a fresh batch. Pass --if-empty to seed ONLY when the collection has no
+events yet — that keeps a provisioning run idempotent (seed once, no-op after).
+
 Examples:
-  python3 scripts/seed_demo.py                 # ~150 events over the last 60 min
+  python3 scripts/seed_demo.py                 # ~150 plays over the last 60 min
   python3 scripts/seed_demo.py --count 400 --minutes 180
   python3 scripts/seed_demo.py --stations table-1 table-2
+  python3 scripts/seed_demo.py --if-empty      # seed only a fresh/empty DB
 """
 import argparse
 import datetime
@@ -46,6 +51,7 @@ def main(argv=None):
     ap.add_argument("--correct-rate", type=float, default=0.7, help="fraction answered correctly (default 0.7)")
     ap.add_argument("--mystery-rate", type=float, default=0.12, help="fraction that are mystery topics (default 0.12)")
     ap.add_argument("--stations", nargs="+", default=None, help="station labels to spread across (default: STATION from .env)")
+    ap.add_argument("--if-empty", action="store_true", help="seed only when the events collection is empty (idempotent)")
     ap.add_argument("--no-notify", action="store_true", help="do not notify the running app")
     args = ap.parse_args(argv)
 
@@ -54,6 +60,15 @@ def main(argv=None):
     stations = args.stations or [cfg["station"]]
 
     _client, db = c.get_client_db(cfg)
+
+    # --if-empty: make a provisioning run idempotent. Seed a fresh DB once; do
+    # nothing (and report it) if events already exist, so re-running never piles
+    # on. Reseeding after a reset still works because the collection is empty.
+    if args.if_empty:
+        existing = db.events.count_documents({})
+        if existing > 0:
+            print(f"--if-empty: {existing} events already present; nothing seeded.")
+            return 0
 
     now = datetime.datetime.utcnow()
     docs = []

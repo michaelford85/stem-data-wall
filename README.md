@@ -95,6 +95,17 @@ sudo ansible-playbook -i localhost, -c local ansible/site.yml
 
 Enable the optional GPIO buttons with `-e buttons_enabled=true`.
 
+To **stand it up already full of demo data** (so the charts and Grafana show
+something on first boot), add `-e seed_demo=true`:
+
+```bash
+ansible-playbook -i inventory.ini site.yml -e seed_demo=true
+```
+
+Seeding is guarded so re-running `site.yml` never piles on more data — it seeds
+once on a fresh database, then does nothing. To add more data later, or to
+reseed after clearing it, use `seed-data.yml` (below).
+
 When it finishes it **prints the exact URLs and the admin PIN**. The Pi keeps
 its existing hostname, so the addresses look like
 **http://&lt;your-pi-hostname&gt;.local:8080/** on the monitor and
@@ -382,7 +393,8 @@ You can also bake it into a full provision with
 
 | Tool | What it does |
 | --- | --- |
-| `make seed-demo` / `scripts/seed_demo.py` | Insert realistic fake events to demo the charts |
+| `make seed-demo` / `scripts/seed_demo.py` | Insert realistic fake events to demo the charts (on this machine) |
+| `ansible/seed-data.yml` | Seed/reseed the Pi from the laptop; **additive** — run again for more data |
 | `make reset-events` / `reset_db.py --events` | Delete all events; keep collection, schema, indexes |
 | `make reset-board` / `reset_db.py --board` | Reset only the game board (used tiles); keep events |
 | `make reset-all` / `reset_db.py --all` | Drop the DB; recreate collection + schema + indexes |
@@ -396,14 +408,34 @@ After a reset, the running app clears the monitor, results page, and iPad
 [`scripts/README.md`](scripts/README.md) for running resets from a laptop over
 an SSH tunnel.
 
+### Seeding demo data from your laptop
+
+`ansible/seed-data.yml` runs the seeder **on the Pi**. Every run *adds* more
+events (it never deletes), so after `reset-data.yml` you can seed again for a
+fresh batch:
+
+```bash
+ansible-playbook -i inventory.ini seed-data.yml                   # ~150 plays, last 60 min
+ansible-playbook -i inventory.ini seed-data.yml -e count=400 -e minutes=180
+ansible-playbook -i inventory.ini seed-data.yml -e 'stations="table-1 table-2"'
+ansible-playbook -i inventory.ini seed-data.yml -e if_empty=true  # only if the DB is empty
+```
+
+Tunables (all optional, override with `-e`): `count`, `minutes`, `correct_rate`,
+`mystery_rate`, `stations`, `if_empty`. The charts update live after seeding.
+
 ### Full round-trip (provision → use → reset → teardown → rebuild)
 
 ```bash
 # 1. Provision a blank Pi
 ansible-playbook -i inventory.ini site.yml
 
-# 2. Try it with demo data, then clear it
+# 2. Fill it with demo data, look at the charts, then clear it
+ansible-playbook -i inventory.ini seed-data.yml
 ansible-playbook -i inventory.ini reset-data.yml -e mode=all -e confirm_reset=yes
+
+#    …and seed again for a fresh batch whenever you like (additive)
+ansible-playbook -i inventory.ini seed-data.yml -e count=300
 
 # 3. Tear it all down (backs up to the laptop first)
 ansible-playbook -i inventory.ini teardown.yml -e confirm_teardown=yes
@@ -456,7 +488,7 @@ db/            events.schema.json + indexes.json (one source of truth)
 scripts/       reset_db.py + seed_demo.py (Python)
 grafana/       Infinity datasource + dashboard provisioning
 gpio/          optional arcade-button service
-ansible/       site.yml, reset-data.yml, teardown.yml, roles/
+ansible/       site.yml, seed-data.yml, reset-data.yml, teardown.yml, roles/
 ```
 
 ## License

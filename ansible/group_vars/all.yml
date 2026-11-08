@@ -51,6 +51,17 @@ grafana_plugin: yesoreyeram-infinity-datasource
 grafana_version: "12.4.3"
 grafana_infinity_version: "4.1.6"
 
+# ---- demo data (optional) --------------------------------------------------
+# Seed realistic FAKE events during provisioning so the monitor charts and
+# Grafana have something to show immediately. Off by default (a real event
+# should start empty). Enable with:  ansible-playbook site.yml -e seed_demo=true
+# Seeding is guarded by --if-empty, so re-running site.yml never piles on data
+# (it seeds once, then no-ops). To ADD more data later, or to reseed after a
+# reset, run ansible/seed-data.yml (additive on every run).
+seed_demo: false
+seed_demo_count: 150
+seed_demo_minutes: 60
+
 # ---- kiosk -----------------------------------------------------------------
 kiosk_user: kiosk
 # Extra Chromium flags appended to the kiosk launch command.

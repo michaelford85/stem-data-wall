@@ -23,6 +23,25 @@
     - role: buttons # GPIO service (only runs when buttons_enabled=true)
 
   post_tasks:
+    # Optional: seed realistic fake events so the charts have something to show
+    # right away. Guarded by --if-empty so a re-run of site.yml never piles on
+    # (seeds once on a fresh DB, then no-ops). To add more later, or to reseed
+    # after a reset, use ansible/seed-data.yml.
+    - name: Seed demo data (only when seed_demo=true, and only if DB is empty)
+      ansible.builtin.command: >-
+        python3 {{ install_dir }}/scripts/seed_demo.py
+        --if-empty --count {{ seed_demo_count }} --minutes {{ seed_demo_minutes }}
+      args:
+        chdir: "{{ install_dir }}"
+      register: seed_demo_result
+      changed_when: "'Inserted' in seed_demo_result.stdout"
+      when: seed_demo | bool
+
+    - name: Show the seeder output
+      ansible.builtin.debug:
+        var: seed_demo_result.stdout_lines
+      when: seed_demo | bool
+
     # Final, authoritative summary: where the credentials live and how to reach
     # them. Prints only the admin PIN (never the MongoDB passwords) and points
     # at the Pi's own .env for the rest.

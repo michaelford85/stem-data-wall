@@ -1,0 +1,51 @@
+---
+# ===========================================================================
+# Seed the STEM Data Wall with realistic FAKE events, from your laptop.
+#
+# This runs scripts/seed_demo.py ON THE PI. Every run ADDS more events (it
+# never deletes), so you can:
+#   * seed a fresh install, and
+#   * reset the data (ansible/reset-data.yml) and run this again for a new batch.
+#
+#   ansible-playbook -i inventory.ini seed-data.yml                       # ~150 plays, last 60 min
+#   ansible-playbook -i inventory.ini seed-data.yml -e count=400 -e minutes=180
+#   ansible-playbook -i inventory.ini seed-data.yml -e 'stations="table-1 table-2"'
+#   ansible-playbook -i inventory.ini seed-data.yml -e if_empty=true      # only if DB is empty
+#
+# Tunables (override with -e):
+#   count         number of "plays" to generate   (default 150; ~2 events each)
+#   minutes       spread events over the last N min (default 60)
+#   correct_rate  fraction answered correctly       (default 0.7)
+#   mystery_rate  fraction that are AMA/mystery      (default 0.12)
+#   stations      space-separated station labels    (default: STATION from .env)
+#   if_empty      true = seed only when empty        (default false, i.e. additive)
+# ===========================================================================
+- name: Seed the STEM Data Wall with demo data
+  hosts: all
+  become: true
+  gather_facts: false
+  vars:
+    count: 150
+    minutes: 60
+    correct_rate: 0.7
+    mystery_rate: 0.12
+    stations: ""
+    if_empty: false
+  tasks:
+    - name: Run seed_demo.py on the Pi
+      ansible.builtin.command: >-
+        python3 {{ install_dir }}/scripts/seed_demo.py
+        --count {{ count }}
+        --minutes {{ minutes }}
+        --correct-rate {{ correct_rate }}
+        --mystery-rate {{ mystery_rate }}
+        {{ '--stations ' ~ stations if stations | length > 0 else '' }}
+        {{ '--if-empty' if if_empty | bool else '' }}
+      args:
+        chdir: "{{ install_dir }}"
+      register: seed_result
+      changed_when: "'Inserted' in seed_result.stdout"
+
+    - name: Show the seeder output
+      ansible.builtin.debug:
+        var: seed_result.stdout_lines
