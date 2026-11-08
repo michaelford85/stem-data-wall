@@ -42,23 +42,58 @@
     mode: "0600"
   when: not app_envfile.stat.exists
 
-# --- bring the stack up -----------------------------------------------------
-- name: Pre-pull Docker images (so everything works offline later)
-  ansible.builtin.command: docker compose pull
+# --- build + bring the stack up ---------------------------------------------
+# Pre-pull only the registry images (mongo, grafana) so they persist for
+# offline use. --ignore-buildable skips the app service, which is built locally
+# from the Dockerfile and is NOT on any registry (pulling it would fail with
+# "pull access denied for stem-data-wall-app").
+- name: Pre-pull the registry images (skip the locally built app)
+  ansible.builtin.command: docker compose pull --ignore-buildable
   args:
     chdir: "{{ install_dir }}"
   changed_when: false
 
-- name: Build and start the stack
-  ansible.builtin.command: docker compose up -d --build
+# Build the app image explicitly. Idempotent: Docker reuses the same image ID
+# when nothing changed (all layers cached), so we only report "changed" when
+# the resulting image ID actually differs from before the build.
+- name: Get the app image ID before building
+  ansible.builtin.command: docker images -q stem-data-wall-app:latest
+  register: app_img_before
+  changed_when: false
+
+- name: Build the app image
+  ansible.builtin.command: docker compose build app
   args:
     chdir: "{{ install_dir }}"
+  environment:
+    # Build an attestation-free, deterministic image so its ID is identical
+    # across cache-only rebuilds. That keeps the idempotency check below
+    # correct on BOTH the classic and the containerd image stores (with build
+    # provenance on, the containerd store re-exports a new attestation manifest
+    # every build, churning the ID), and keeps the kiosk image lean.
+    BUILDX_NO_DEFAULT_ATTESTATIONS: "1"
+  changed_when: false
+
+- name: Get the app image ID after building
+  ansible.builtin.command: docker images -q stem-data-wall-app:latest
+  register: app_img_after
+  changed_when: app_img_after.stdout | trim != app_img_before.stdout | trim
+
+# pull_policy: build means `up` also runs a (cache-only) build; the same env
+# keeps that deterministic so an unchanged image never triggers a container
+# recreate. changed_when ignores build output and only reacts to real
+# container state changes.
+- name: Start the stack
+  ansible.builtin.command: docker compose up -d
+  args:
+    chdir: "{{ install_dir }}"
+  environment:
+    BUILDX_NO_DEFAULT_ATTESTATIONS: "1"
   register: app_compose_up
   changed_when: >-
     ('Started' in app_compose_up.stderr) or
     ('Recreate' in app_compose_up.stderr) or
-    ('Created' in app_compose_up.stderr) or
-    ('Built' in app_compose_up.stderr)
+    ('Created' in app_compose_up.stderr)
 
 # --- show the PIN so staff can unlock /admin --------------------------------
 - name: Read the admin PIN from .env

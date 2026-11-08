@@ -23,7 +23,8 @@ env: ## Create .env from .env.example if it does not exist yet
 	@test -f .env || (cp .env.example .env && echo "Created .env from template — edit the passwords and PIN!")
 
 up: env ## Build and start the whole stack (app + mongo + grafana)
-	$(COMPOSE) up -d --build
+	$(COMPOSE) build app
+	$(COMPOSE) up -d
 	@echo ""
 	@echo "  Monitor (kiosk)  : http://localhost:8080/"
 	@echo "  Controller (iPad): http://localhost:8080/controller"

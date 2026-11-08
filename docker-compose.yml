@@ -43,6 +43,10 @@ services:
   app:
     build: .
     image: stem-data-wall-app:latest
+    # This image is built locally from the Dockerfile, not pulled from a
+    # registry. pull_policy: build tells Compose to build it (and never try to
+    # "docker pull stem-data-wall-app", which would fail with access denied).
+    pull_policy: build
     container_name: datawall-app
     restart: unless-stopped
     environment:
