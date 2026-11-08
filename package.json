@@ -1,7 +1,7 @@
 {
   "name": "stem-data-wall",
   "version": "1.0.0",
-  "description": "Offline, kid-friendly interactive data game and live dashboard for Raspberry Pi STEM events",
+  "description": "Offline, student-friendly interactive data game and live dashboard for Raspberry Pi STEM events",
   "license": "MIT",
   "type": "commonjs",
   "main": "server/index.js",

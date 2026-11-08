@@ -167,7 +167,7 @@ questions:
 # ===========================================================================
 # The two AMA ("Ask Us Anything") tiles. The monitor shows the prompt; a team
 # member taps one topic on the iPad and then answers OUT LOUD. We store ONLY
-# the chosen topic — never anything the team or kids say.
+# the chosen topic — never anything the team or students say.
 # ===========================================================================
 mystery:
   monitor_prompt: "AMA: Ask Us Anything about our jobs!"

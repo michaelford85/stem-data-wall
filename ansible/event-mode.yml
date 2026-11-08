@@ -3,7 +3,7 @@
 # Turn "event mode" on or off on the Pi without re-running the whole site.yml.
 #
 # Event mode stops and disables unattended-upgrades and the apt-daily timers so
-# that nothing grabs the apt lock or restarts services while kids are playing.
+# that nothing grabs the apt lock or restarts services while students are playing.
 #
 #   # Just before the event — quiet all background updates:
 #   ansible-playbook -i inventory.ini event-mode.yml -e event_mode=true

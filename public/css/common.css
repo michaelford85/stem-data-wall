@@ -1,6 +1,6 @@
 /* ==========================================================================
    Shared base styles for all screens. Loads the self-hosted Fredoka font and
-   sets up the bright, playful, kid-friendly look. No external resources.
+   sets up the bright, playful, student-friendly look. No external resources.
    ========================================================================== */
 @import url("/vendor/fonts/fredoka.css");
 
@@ -36,7 +36,7 @@ body {
   color: var(--ink);
 }
 
-/* Kid-proofing for touch screens: no accidental selection, callouts, or zoom.
+/* Student-proofing for touch screens: no accidental selection, callouts, or zoom.
    (Pages that need it add .no-select to <body>.) */
 .no-select {
   -webkit-user-select: none;

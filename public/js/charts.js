@@ -9,7 +9,7 @@ function _fs(big, n) {
   return big ? n * 1.9 : n;
 }
 
-/* Bar chart of how many kids picked each answer for ONE question.
+/* Bar chart of how many students picked each answer for ONE question.
    The correct answer gets a gold outline + a ⭐. */
 function answerBarOption(q, big) {
   const cats = q.answers.map((a) => `${a.emoji}\n${a.label}`);

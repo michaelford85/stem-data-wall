@@ -1,10 +1,10 @@
 # 🧩 STEM Data Wall
 
-An **offline, kid-friendly interactive data game and live dashboard** for a
+An **offline, student-friendly interactive data game and live dashboard** for a
 Raspberry Pi, built for a school **STEM Career Day** (grades 3–8, about
 ages 8–14).
 
-Kids play a Jeopardy-style quiz on an iPad. Their completely **anonymous**
+Students play a Jeopardy-style quiz on an iPad. Their completely **anonymous**
 answers instantly become live charts on a big monitor, and the team uses those
 charts to spark conversations about careers in **data, solutions architecture,
 technical sales, cybersecurity, and automation**.
@@ -13,7 +13,7 @@ technical sales, cybersecurity, and automation**.
 
 > 🔒 **No personal data is ever collected** — no names, no typing, no camera,
 > no microphone. See [Privacy by design](#-privacy-by-design). The repo is
-> public on purpose, so curious kids, parents, and teachers can build their own.
+> public on purpose, so curious students, parents, and teachers can build their own.
 
 ---
 
@@ -21,7 +21,7 @@ technical sales, cybersecurity, and automation**.
 
 ![How the pieces fit together: an iPad controller sends taps over Wi-Fi to a Raspberry Pi running the app, database and dashboards, which drives a big monitor showing live results](docs/images/architecture.svg)
 
-**The pieces:** kids tap answers on the **iPad** (or a USB number pad / arcade
+**The pieces:** students tap answers on the **iPad** (or a USB number pad / arcade
 buttons). Those taps travel over the Pi's own Wi-Fi to the **Raspberry Pi**,
 which runs everything with no internet — the Node app (Express + Socket.IO), the
 **MongoDB** database that stores one tiny anonymous event per tap, and
@@ -53,7 +53,7 @@ Here's what the data-facing screens look like with demo data loaded.
 streams in over Socket.IO and these ECharts redraw live: most-popular category,
 percent correct, answers over time, and a per-question breakdown of how everyone
 answered (the ⭐ marks the correct choice). It turns the room's own answers into
-an instant, no-personal-data visualization kids can see themselves in.
+an instant, no-personal-data visualization students can see themselves in.
 
 ![Live Results page showing category bar charts, percent-correct, an answers-over-time line, and per-question answer distributions](docs/images/live-results.webp)
 
@@ -70,7 +70,7 @@ event.
 
 The same anonymous events feed a **Grafana** dashboard (the *Engineer View*),
 reachable from the staff hub. It's the grown-up, real-world counterpart to the
-kid-facing results page: answers-per-minute trend, most-popular and
+student-facing results page: answers-per-minute trend, most-popular and
 percent-correct-per-category panels, events-by-station, a big total-events stat,
 and a live table of the latest events. Showing it next to the playful monitor is
 a great way to make the point that **the colorful game and a professional
@@ -270,7 +270,7 @@ user and key) instead of the terminal command.
 
 ## Editing the game (no code changes)
 
-Everything kids see lives in two plain-text files you can edit with any editor:
+Everything students see lives in two plain-text files you can edit with any editor:
 
 - **[`content/questions.yaml`](content/questions.yaml)** — 4 categories × 3
   questions. Each question has the text, 4 answers (emoji, label, color), the
@@ -346,7 +346,7 @@ press to the app on `localhost`.
 This project is built so it **cannot** collect personal information about
 children — that's enforced in the code, not just promised:
 
-- **No names, no free text.** There is no text input anywhere. Kids only tap
+- **No names, no free text.** There is no text input anywhere. Students only tap
   pre-written tiles and answers.
 - **No camera, no microphone, no device identifiers, no IP addresses** are ever
   read or stored.
@@ -375,7 +375,7 @@ A single event looks like this — there is nothing personal to find:
 ## How this connects to real tech careers
 
 The wall is a tiny, honest version of a real data system — a great way to show
-kids (and parents) what these jobs actually do:
+students (and parents) what these jobs actually do:
 
 - **Data engineering** — events flow from the game into a database, then get
   aggregated into stats. That pipeline (collect → store → summarize) is the core
@@ -388,7 +388,7 @@ kids (and parents) what these jobs actually do:
   show how technology solves a real problem.
 - **Cybersecurity** — privacy-by-design, least-privilege database users, and
   binding the database to localhost are everyday security practices. The "Spot
-  the Trick" category teaches the kid version.
+  the Trick" category teaches the student version.
 - **Automation engineering** — one `ansible-playbook` command turns a blank Pi
   into the whole kiosk, and tears it back down. That's infrastructure as code.
 

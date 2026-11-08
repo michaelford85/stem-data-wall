@@ -273,7 +273,7 @@ function buildSlides() {
   slides.push(() => {
     const d = document.createElement("div");
     d.className = "attract-slide";
-    d.innerHTML = `<div class="chart-title">What kids are playing</div>
+    d.innerHTML = `<div class="chart-title">What students are playing</div>
       <div class="chart-panel" style="width:90vw"><div class="chart" id="attract-chart"></div></div>`;
     setTimeout(() => {
       disposeChart();
