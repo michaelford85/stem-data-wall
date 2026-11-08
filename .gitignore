@@ -11,6 +11,9 @@ npm-debug.log*
 data/
 *.log
 
+# Ansible Inventory
+ansible/inventory.ini
+
 # Reset backups produced by scripts/reset_db.py --backup
 backups/
 *.backup.json
