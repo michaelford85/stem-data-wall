@@ -1,7 +1,8 @@
 # 🧩 STEM Data Wall
 
 An **offline, kid-friendly interactive data game and live dashboard** for a
-Raspberry Pi, built for an elementary-school **STEM Career Day**.
+Raspberry Pi, built for a school **STEM Career Day** (grades 3–8, about
+ages 8–14).
 
 Kids play a Jeopardy-style quiz on an iPad. Their completely **anonymous**
 answers instantly become live charts on a big monitor, and the team uses those
@@ -44,7 +45,7 @@ never using `latest`.
 | Screen | URL | Who uses it |
 | --- | --- | --- |
 | **Monitor** | `/` | The crowd-facing big screen. Attract loop when idle; shows the question, a reveal animation, and the live chart during play. |
-| **Controller** | `/controller` | The iPad. Jeopardy board → 4 big answer buttons → back to the board. |
+| **Controller** | `/controller` | The iPad. Jeopardy board (tiles show **100/200/300** by difficulty, plus two **AMA** tiles) → 4 big answer buttons → back to the board. |
 | **Results** | `/results` | Live ECharts: answer distribution, category popularity, percent correct, answers over time. |
 | **Admin** | `/admin` | PIN-protected: reset the board, reset data, view totals, export CSV. |
 | **Staff** | `/staff` | Laptop hub: QR code for the iPad + links to everything, including Grafana. |
@@ -223,7 +224,12 @@ Everything kids see lives in two plain-text files you can edit with any editor:
 
 - **[`content/questions.yaml`](content/questions.yaml)** — 4 categories × 3
   questions. Each question has the text, 4 answers (emoji, label, color), the
-  correct answer, and a fun fact. Reading level is aimed at 2nd–4th grade.
+  correct answer, and a fun fact. Questions are aimed at **grades 3–8**, and
+  within each category the three tiles ramp in difficulty — shown on the board
+  as **100 / 200 / 300** points (easy → challenging). Points are just labels:
+  there is **no scoring, leaderboard, or prizes**. The two **AMA** ("Ask Us
+  Anything") tiles let the team field questions about their jobs out loud; only
+  the chosen topic is ever stored.
 - **[`content/team.yaml`](content/team.yaml)** — the 4 team members shown on the
   attract-mode "meet the team" slide (name, company, role, years, fun fact, photo).
 

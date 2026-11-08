@@ -7,8 +7,10 @@
 //   board          the Jeopardy board (pick a tile)
 //   question       a question is up; waiting for an answer
 //   reveal         showing the correct answer + fun fact, then the chart
-//   mystery        a "?" tile is up; staff pick a topic
+//   mystery        an AMA ("Ask Us Anything") tile is up; staff pick a topic
 //   mystery_reveal "great question!" moment before returning to the board
+//                  (the "mystery" phase/event names are kept internally so the
+//                   stored data and schema do not change)
 // ===========================================================================
 "use strict";
 

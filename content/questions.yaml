@@ -3,12 +3,19 @@
 # any code. Change the words, swap emoji, pick new colors, then just reload
 # the page (the app re-reads this file on every board load).
 #
-# Reading level: aimed at 2nd–4th grade. Keep it short, kind, and fun.
+# Audience: grades 3-8 (about ages 8-14). Keep it short, kind, and clear —
+# readable on the big monitor from a few feet away.
+#
+# Difficulty ramps WITHIN each category (shown on the board as points, Jeopardy
+# style). The points are just labels — there is no scoring or leaderboard:
+#   1st tile = 100  easy       (3rd-4th grade)
+#   2nd tile = 200  medium     (5th-6th grade)
+#   3rd tile = 300  challenging(7th-8th grade)
 #
 # Structure:
-#   categories: the 4 columns on the Jeopardy board (order matters)
+#   categories: the 4 columns on the board (order matters)
 #   questions:  3 questions per category, keyed by the category "key"
-#   mystery:    the two "?" tiles — the team answers these out loud
+#   mystery:    the two AMA ("Ask Us Anything") tiles — the team answers aloud
 #
 # Each question has:
 #   id       a short unique code (used only in the anonymous data)
@@ -34,132 +41,136 @@ categories:
 
 questions:
   # ------------------------------------------------------------------ #
+  # Data Detectives — data, algorithms, databases, decisions
   data_detectives:
-    - id: dd1
-      text: "What is DATA?"
-      correct: a
-      fact: "Data is just information! Your favorite color is data. How many cookies you ate is data too."
+    - id: dd1 # 100 · easy
+      text: "What is an ALGORITHM?"
+      correct: b
+      fact: "Even a recipe is an algorithm — a clear list of steps done in order. Computers follow algorithms to get things done."
       answers:
-        - { id: a, emoji: "📊", label: "Facts and numbers we collect", color: "#2563eb" }
-        - { id: b, emoji: "🍕", label: "A yummy pizza topping", color: "#f59e0b" }
-        - { id: c, emoji: "🐶", label: "A kind of puppy", color: "#10b981" }
-        - { id: d, emoji: "🚀", label: "A rocket ship", color: "#ef4444" }
-    - id: dd2
-      text: "A store counts how many RED and BLUE shirts it sells. Why count?"
+        - { id: a, emoji: "🎵", label: "A type of music beat", color: "#2563eb" }
+        - { id: b, emoji: "🪜", label: "A step-by-step set of instructions", color: "#f59e0b" }
+        - { id: c, emoji: "🔑", label: "A secret password", color: "#16a34a" }
+        - { id: d, emoji: "📷", label: "A kind of camera", color: "#ef4444" }
+    - id: dd2 # 200 · medium
+      text: "What does a DATABASE do?"
       correct: a
-      fact: "Counting helps the store decide what to buy more of. That is using data to make a smart choice!"
+      fact: "A library is like a database for books — everything is organized so you can find just what you need quickly."
       answers:
-        - { id: a, emoji: "🧠", label: "To know which color to make more of", color: "#2563eb" }
-        - { id: b, emoji: "🎈", label: "To pop balloons", color: "#f59e0b" }
-        - { id: c, emoji: "😴", label: "To get sleepy", color: "#10b981" }
-        - { id: d, emoji: "🧦", label: "To lose socks", color: "#ef4444" }
-    - id: dd3
-      text: "An app remembers which games you like. What is it using?"
-      correct: a
-      fact: "Apps look at what you tap to show you more things you might like. That is data at work!"
+        - { id: a, emoji: "🗄️", label: "Stores data so you can search it fast", color: "#2563eb" }
+        - { id: b, emoji: "📺", label: "Shows websites on a screen", color: "#f59e0b" }
+        - { id: c, emoji: "🎮", label: "Runs a video game", color: "#16a34a" }
+        - { id: d, emoji: "🖨️", label: "Prints documents on paper", color: "#ef4444" }
+    - id: dd3 # 300 · challenging
+      text: "A store sees umbrellas sell out when rain is forecast. The smart move is…"
+      correct: c
+      fact: "Using past data to predict what people will need is how businesses plan ahead. That's data-driven decision making."
       answers:
-        - { id: a, emoji: "💾", label: "Data about what you tapped", color: "#2563eb" }
-        - { id: b, emoji: "🪄", label: "Pure magic", color: "#f59e0b" }
-        - { id: c, emoji: "🔮", label: "A crystal ball", color: "#10b981" }
-        - { id: d, emoji: "🍀", label: "Lucky guesses", color: "#ef4444" }
+        - { id: a, emoji: "🎲", label: "Order umbrellas at random", color: "#2563eb" }
+        - { id: b, emoji: "🚫", label: "Stop selling umbrellas", color: "#f59e0b" }
+        - { id: c, emoji: "☔", label: "Stock more before rainy days", color: "#16a34a" }
+        - { id: d, emoji: "🥛", label: "Lower the price of milk", color: "#ef4444" }
 
   # ------------------------------------------------------------------ #
+  # Spot the Trick — phishing, strong passwords, two-factor
   spot_the_trick:
-    - id: st1
-      text: "A pop-up says: 'You WON a free phone! Type your password!' What do you do?"
+    - id: st1 # 100 · easy
+      text: "An email says 'Your account is LOCKED! Click now!' What's the clue it's fake?"
       correct: a
-      fact: "Real prizes never ask for your password. If it sounds too good to be true, it is a trick."
+      fact: "Scam messages try to rush you so you won't stop and think. Slow down and check with an adult before clicking."
       answers:
-        - { id: a, emoji: "🚫", label: "Close it — it is a trick", color: "#dc2626" }
-        - { id: b, emoji: "🔑", label: "Type my password fast", color: "#f59e0b" }
-        - { id: c, emoji: "📞", label: "Call the phone number", color: "#10b981" }
-        - { id: d, emoji: "🎉", label: "Throw a party", color: "#2563eb" }
-    - id: st2
-      text: "Someone online says they are a 10-year-old kid. Can you be SURE?"
-      correct: a
-      fact: "People online are not always who they say. Only chat with people your grown-ups know."
+        - { id: a, emoji: "🚨", label: "It rushes you and creates panic", color: "#2563eb" }
+        - { id: b, emoji: "📅", label: "It was sent on a weekday", color: "#f59e0b" }
+        - { id: c, emoji: "🔤", label: "It uses full sentences", color: "#16a34a" }
+        - { id: d, emoji: "🖼️", label: "It shows a company logo", color: "#ef4444" }
+    - id: st2 # 200 · medium
+      text: "Which makes the STRONGEST password?"
+      correct: d
+      fact: "Length matters most. A long phrase of a few random words is much harder to guess than a short tricky one."
       answers:
-        - { id: a, emoji: "🤔", label: "No — people online can pretend", color: "#dc2626" }
-        - { id: b, emoji: "✅", label: "Yes, it is always true", color: "#f59e0b" }
-        - { id: c, emoji: "📅", label: "Only on Tuesdays", color: "#10b981" }
-        - { id: d, emoji: "🦄", label: "Yes, like a unicorn", color: "#2563eb" }
-    - id: st3
-      text: "A stranger wants to follow you through a LOCKED school door. You should..."
-      correct: a
-      fact: "Locked doors keep us safe. Let a teacher open it — never let a stranger sneak in behind you."
+        - { id: a, emoji: "🐱", label: "Your pet's name", color: "#2563eb" }
+        - { id: b, emoji: "🔢", label: "123456", color: "#f59e0b" }
+        - { id: c, emoji: "🎂", label: "Your birthday", color: "#16a34a" }
+        - { id: d, emoji: "🧩", label: "A long phrase of random words", color: "#ef4444" }
+    - id: st3 # 300 · challenging
+      text: "Two-factor authentication keeps an account safer by…"
+      correct: b
+      fact: "Two factors means two kinds of proof — something you know (a password) plus something you have (a code on your phone). A stolen password alone isn't enough."
       answers:
-        - { id: a, emoji: "🙅", label: "Say no and tell an adult", color: "#dc2626" }
-        - { id: b, emoji: "🚪", label: "Hold the door open", color: "#f59e0b" }
-        - { id: c, emoji: "🥪", label: "Give them your lunch", color: "#10b981" }
-        - { id: d, emoji: "🏃", label: "Race them inside", color: "#2563eb" }
+        - { id: a, emoji: "🔁", label: "Making you type your password twice", color: "#2563eb" }
+        - { id: b, emoji: "🔐", label: "Also needing a second code, not just a password", color: "#f59e0b" }
+        - { id: c, emoji: "🗑️", label: "Deleting your password each week", color: "#16a34a" }
+        - { id: d, emoji: "📢", label: "Sharing your password with a friend", color: "#ef4444" }
 
   # ------------------------------------------------------------------ #
+  # Tech Careers — cybersecurity, automation, architecture, sales
   tech_careers:
-    - id: tc1
-      text: "A SOLUTIONS ARCHITECT is most like a..."
+    - id: tc1 # 100 · easy
+      text: "A CYBERSECURITY ANALYST spends the day…"
       correct: a
-      fact: "A solutions architect draws the plan for big computer systems, like an architect plans a house. They team up with sales engineers to help companies."
+      fact: "Cybersecurity analysts watch for hackers and fix weak spots — like digital security guards for information."
       answers:
-        - { id: a, emoji: "🏗️", label: "Planner who fits computer parts together", color: "#16a34a" }
-        - { id: b, emoji: "🍳", label: "Chef who cooks eggs", color: "#f59e0b" }
-        - { id: c, emoji: "🐠", label: "Fish trainer", color: "#2563eb" }
-        - { id: d, emoji: "🤡", label: "Circus clown", color: "#ef4444" }
-    - id: tc2
-      text: "A CYBERSECURITY pro keeps computers..."
+        - { id: a, emoji: "🛡️", label: "Protecting computers and data from attacks", color: "#2563eb" }
+        - { id: b, emoji: "🍳", label: "Cooking food in a restaurant", color: "#f59e0b" }
+        - { id: c, emoji: "🚚", label: "Driving delivery trucks", color: "#16a34a" }
+        - { id: d, emoji: "🎨", label: "Painting houses", color: "#ef4444" }
+    - id: tc2 # 200 · medium
+      text: "An AUTOMATION ENGINEER mostly…"
+      correct: c
+      fact: "Automation engineers teach computers to handle boring, repeated jobs — freeing people up for creative work."
+      answers:
+        - { id: a, emoji: "🎨", label: "Designs an app's colors and buttons", color: "#2563eb" }
+        - { id: b, emoji: "🛡️", label: "Hunts for hackers breaking in", color: "#f59e0b" }
+        - { id: c, emoji: "🤖", label: "Writes code so computers repeat tasks on their own", color: "#16a34a" }
+        - { id: d, emoji: "🧱", label: "Builds the physical computer chips", color: "#ef4444" }
+    - id: tc3 # 300 · challenging
+      text: "A SOLUTIONS ARCHITECT's main job is to…"
       correct: a
-      fact: "Cybersecurity experts are like digital superheroes. They guard your information from hackers."
+      fact: "Solutions architects plan the big picture of a system. Technical sales engineers then show customers how that solution solves their real problem."
       answers:
-        - { id: a, emoji: "🛡️", label: "Safe from hackers and bad guys", color: "#16a34a" }
-        - { id: b, emoji: "🧁", label: "Full of cupcakes", color: "#f59e0b" }
-        - { id: c, emoji: "🧊", label: "Really, really cold", color: "#2563eb" }
-        - { id: d, emoji: "🎸", label: "Playing loud music", color: "#ef4444" }
-    - id: tc3
-      text: "A TECHNICAL SALES ENGINEER helps people by..."
-      correct: a
-      fact: "Technical sales engineers understand tech AND people. They show how a tool can solve a real problem. Behind the scenes, automation engineers teach computers to do boring jobs by themselves!"
-      answers:
-        - { id: a, emoji: "🤝", label: "Showing how tech solves their problems", color: "#16a34a" }
-        - { id: b, emoji: "😡", label: "Yelling at computers", color: "#f59e0b" }
-        - { id: c, emoji: "🛌", label: "Taking long naps", color: "#2563eb" }
-        - { id: d, emoji: "🧹", label: "Sweeping the floor", color: "#ef4444" }
+        - { id: a, emoji: "🏗️", label: "Design how all the tech pieces fit together", color: "#2563eb" }
+        - { id: b, emoji: "🛡️", label: "Watch for hackers all day", color: "#f59e0b" }
+        - { id: c, emoji: "🤖", label: "Automate one repeated task", color: "#16a34a" }
+        - { id: d, emoji: "🧪", label: "Test apps for bugs", color: "#ef4444" }
 
   # ------------------------------------------------------------------ #
+  # Computers in Real Life — the cloud, GPS, binary
   computers_real_life:
-    - id: cr1
-      text: "When an app says 'you might like THIS show,' how does it know?"
-      correct: a
-      fact: "Streaming and game apps use data about what you watched or played to guess what you will like next. That is called a recommendation."
+    - id: cr1 # 100 · easy
+      text: "When files are saved 'in the CLOUD,' they're really stored…"
+      correct: b
+      fact: "The 'cloud' is just other people's computers — servers in big data centers — that you reach over the internet."
       answers:
-        - { id: a, emoji: "👀", label: "It looks at what you watched before", color: "#9333ea" }
-        - { id: b, emoji: "🧙", label: "A wizard picks it", color: "#f59e0b" }
-        - { id: c, emoji: "🎲", label: "It rolls dice", color: "#2563eb" }
-        - { id: d, emoji: "🐈", label: "Your cat chooses", color: "#ef4444" }
-    - id: cr2
-      text: "How does a MAPS app find the fastest way to grandma's house?"
+        - { id: a, emoji: "🌧️", label: "Inside real rain clouds", color: "#2563eb" }
+        - { id: b, emoji: "🖥️", label: "On powerful computers in data centers", color: "#f59e0b" }
+        - { id: c, emoji: "🌙", label: "On the moon", color: "#16a34a" }
+        - { id: d, emoji: "📼", label: "Only on your own phone", color: "#ef4444" }
+    - id: cr2 # 200 · medium
+      text: "How does a phone's MAP know where you are?"
       correct: a
-      fact: "Map apps crunch tons of road and traffic data every second to find you the quickest route."
+      fact: "GPS uses satellites in space; your phone compares their signals to pinpoint you. Wi-Fi and cell towers can help it get a fix faster."
       answers:
-        - { id: a, emoji: "🛰️", label: "Computers check roads and traffic", color: "#9333ea" }
-        - { id: b, emoji: "🗺️", label: "It just guesses", color: "#f59e0b" }
-        - { id: c, emoji: "🐦", label: "A bird tells it", color: "#2563eb" }
-        - { id: d, emoji: "🎯", label: "It throws darts", color: "#ef4444" }
-    - id: cr3
-      text: "How does your phone know it might RAIN today?"
-      correct: a
-      fact: "Weather apps use data from satellites and sensors, then computers predict what is coming."
+        - { id: a, emoji: "🛰️", label: "Signals from GPS satellites in space", color: "#2563eb" }
+        - { id: b, emoji: "🔋", label: "The phone's battery level", color: "#f59e0b" }
+        - { id: c, emoji: "📷", label: "The camera taking photos", color: "#16a34a" }
+        - { id: d, emoji: "⌨️", label: "You type your address every time", color: "#ef4444" }
+    - id: cr3 # 300 · challenging
+      text: "Deep down, computers store ALL data — words, photos, music — as…"
+      correct: d
+      fact: "Everything in a computer is binary — just 1s and 0s. Eight of them make a 'byte', enough to store a single letter."
       answers:
-        - { id: a, emoji: "🌦️", label: "Computers study weather data", color: "#9333ea" }
-        - { id: b, emoji: "🐸", label: "A frog croaks", color: "#f59e0b" }
-        - { id: c, emoji: "🎈", label: "It pops a balloon", color: "#2563eb" }
-        - { id: d, emoji: "😮‍💨", label: "Someone blows the clouds", color: "#ef4444" }
+        - { id: a, emoji: "🔤", label: "Tiny printed letters", color: "#2563eb" }
+        - { id: b, emoji: "🎨", label: "Microscopic dots of paint", color: "#f59e0b" }
+        - { id: c, emoji: "🧲", label: "Small magnets spelling words", color: "#16a34a" }
+        - { id: d, emoji: "🔢", label: "1s and 0s (binary)", color: "#ef4444" }
 
 # ===========================================================================
-# The two "?" mystery tiles. The monitor shows the prompt; a team member taps
-# one topic on the iPad and then answers OUT LOUD. We store ONLY the topic —
-# never anything the team or kids say.
+# The two AMA ("Ask Us Anything") tiles. The monitor shows the prompt; a team
+# member taps one topic on the iPad and then answers OUT LOUD. We store ONLY
+# the chosen topic — never anything the team or kids say.
 # ===========================================================================
 mystery:
-  monitor_prompt: "Ask the team anything about our jobs!"
+  monitor_prompt: "AMA: Ask Us Anything about our jobs!"
   topics:
     - { id: started, emoji: "🚀", label: "How did you get started?" }
     - { id: school, emoji: "🎓", label: "School and learning" }

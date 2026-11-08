@@ -77,7 +77,18 @@ body {
 }
 .c-tile.mystery {
   background: var(--c-mystery);
-  font-size: clamp(2rem, 8vmin, 4rem);
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.1;
+}
+.c-tile.mystery .ama-big {
+  font-size: clamp(1.6rem, 7vmin, 3rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.c-tile.mystery .ama-sub {
+  font-size: clamp(0.8rem, 3vmin, 1.1rem);
+  font-weight: 600;
 }
 
 /* ---- answers / topics -------------------------------------------------- */

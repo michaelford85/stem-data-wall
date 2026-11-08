@@ -55,8 +55,11 @@ function renderBoard() {
         return;
       }
       const u = used.includes(q.id) ? " used" : "";
+      // Jeopardy-style point LABEL (100/200/300 as difficulty rises). Points
+      // are cosmetic only — there is no scoring and nothing extra is stored.
+      const points = (row + 1) * 100;
       parts.push(
-        `<button class="c-tile${u}" style="background:${col.color}" data-tile="${q.id}">${row + 1}</button>`
+        `<button class="c-tile${u}" style="background:${col.color}" data-tile="${q.id}">${points}</button>`
       );
     });
   }
@@ -64,9 +67,13 @@ function renderBoard() {
   parts.push(`<div class="c-mystery-row">`);
   ["mystery-1", "mystery-2"].forEach((id) => {
     const u = used.includes(id) ? " used" : "";
-    parts.push(`<button class="c-tile mystery${u}" data-mystery="${id}"><span class="emoji">❓</span></button>`);
+    parts.push(
+      `<button class="c-tile mystery${u}" data-mystery="${id}">
+         <span class="ama-big">AMA</span><span class="ama-sub">Ask Us Anything!</span>
+       </button>`
+    );
   });
-  parts.push(`</div></div><div class="hint">Number pad: 1–4 pick a column · 5 picks a mystery tile</div></div>`);
+  parts.push(`</div></div><div class="hint">Number pad: 1–4 pick a column · 5 picks an AMA tile</div></div>`);
   app.innerHTML = parts.join("");
 
   app.querySelectorAll("[data-tile]").forEach((b) =>

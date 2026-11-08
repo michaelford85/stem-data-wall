@@ -9,6 +9,15 @@ const IDLE_MS = 45000; // show attract after 45s with no activity
 const REVEAL_CARD_MS = 4000; // reveal card, then the per-question chart for ~5s
 const ATTRACT_SLIDE_MS = 8000;
 
+// Short, varied encouragement shown on the reveal card. No prizes — just cheer.
+const CHEER_CORRECT = ["You got it! 🎉", "Nailed it! 🙌", "Data genius! 🧠", "Boom! Correct! 💥"];
+const CHEER_INCORRECT = [
+  "Great guess! Now you know! 💡",
+  "So close! Check out the fun fact! 👀",
+  "Nice try — you just learned something! 🌟",
+];
+const pickOne = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
 const els = {
   board: document.getElementById("board"),
   play: document.getElementById("play"),
@@ -76,7 +85,8 @@ function renderBoard(state) {
         t.style.visibility = "hidden";
       } else {
         t.style.background = col.color;
-        t.textContent = String(row + 1);
+        // Jeopardy-style point LABEL (100/200/300). Cosmetic only — no scoring.
+        t.textContent = String((row + 1) * 100);
         if (state.usedTiles.includes(q.id)) t.classList.add("used");
       }
       grid.appendChild(t);
@@ -88,7 +98,7 @@ function renderBoard(state) {
   ["mystery-1", "mystery-2"].forEach((id) => {
     const t = document.createElement("div");
     t.className = "tile mystery";
-    t.innerHTML = '<span class="emoji">❓</span>';
+    t.innerHTML = '<span class="ama-big">AMA</span><span class="ama-sub">Ask Us Anything!</span>';
     if (state.usedTiles.includes(id)) t.classList.add("used");
     mrow.appendChild(t);
   });
@@ -137,11 +147,12 @@ function renderRevealCard(cur) {
   const correct = cur.answers.find((a) => a.id === cur.correctAnswerId);
   const wrap = document.createElement("div");
   wrap.className = "reveal-wrap";
+  const cheer = pickOne(cur.correct ? CHEER_CORRECT : CHEER_INCORRECT);
   wrap.innerHTML = `
     <div class="reveal-big">The answer is…</div>
     <div class="reveal-answer"><span class="emoji">${correct.emoji}</span> ${correct.label}</div>
     <div class="reveal-fact">💡 ${cur.fact}</div>
-    <div class="reveal-win">🎉 Everyone wins! Grab a prize! 🎉</div>`;
+    <div class="reveal-cheer">${cheer}</div>`;
   els.playInner.innerHTML = "";
   els.playInner.appendChild(wrap);
 }
@@ -182,7 +193,7 @@ function renderMystery(cur) {
   const wrap = document.createElement("div");
   wrap.className = "mystery-wrap";
   wrap.innerHTML = `
-    <div class="mystery-q emoji">❓</div>
+    <div class="mystery-q emoji">🙋</div>
     <div class="mystery-prompt">${cur.prompt}</div>`;
   els.playInner.innerHTML = "";
   els.playInner.appendChild(wrap);

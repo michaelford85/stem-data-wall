@@ -74,6 +74,18 @@ body {
 }
 .tile.mystery {
   background: var(--c-mystery);
+  flex-direction: column;
+  gap: 0.4vh;
+  line-height: 1.05;
+}
+.tile.mystery .ama-big {
+  font-size: 5.5vh;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+.tile.mystery .ama-sub {
+  font-size: 2.4vh;
+  font-weight: 600;
 }
 .tile.used {
   opacity: 0.28;
@@ -163,7 +175,7 @@ body {
   padding: 2vh 3vw;
   box-shadow: var(--shadow);
 }
-.reveal-win {
+.reveal-cheer {
   font-size: 5vh;
   font-weight: 700;
   color: var(--c-careers);
