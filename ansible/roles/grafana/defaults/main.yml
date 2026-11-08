@@ -2,3 +2,10 @@
 # The Grafana Infinity data source reads the app's /api/stats JSON endpoints.
 # (We deliberately do NOT use Grafana's Enterprise MongoDB data source.)
 grafana_plugin: yesoreyeram-infinity-datasource
+
+# Where plugins live inside the grafana container (the grafana_plugins volume).
+grafana_plugins_dir: /var/lib/grafana/plugins
+
+# Pinned Infinity version (overridden by group_vars/all.yml). Must match the
+# version compose preinstalls, and be compatible with the pinned Grafana image.
+grafana_infinity_version: "4.1.6"

@@ -33,7 +33,11 @@ flowchart LR
 
 Everything runs **on the Pi, with no internet**. All JavaScript, CSS, fonts,
 emoji, and images are bundled locally; Docker images and the Grafana plugin are
-pulled once at setup time and then persist.
+pulled once at setup time and then persist. The Grafana engineer view pins
+**grafana-oss `12.4.3`** and the **Infinity plugin `4.1.6`** together — a
+compatible pair (Infinity 4.1.6 needs Grafana ≥ 12.2.5). Bump both together in
+[`ansible/group_vars/all.yml`](ansible/group_vars/all.yml) and `.env.example`,
+never using `latest`.
 
 ### The five screens
 
@@ -415,6 +419,14 @@ ansible-playbook -i inventory.ini site.yml
   automatically when the network returns.
 - **Grafana panel empty?** Confirm the Infinity plugin is installed and that
   Grafana can reach the app at `http://app:3000` (same Docker network).
+- **Grafana panels show a plugin error** (e.g. *"…failed. Error: 404 Not Found,
+  loading react/jsx-runtime from …/yesoreyeram-infinity-datasource/module.js"*)?
+  The installed Infinity plugin version doesn't match the Grafana version. The
+  repo pins a compatible pair (grafana-oss `12.4.3` + Infinity `4.1.6`); **re-run
+  `site.yml`** — it upgrades Grafana and installs the pinned plugin version
+  (replacing a mismatched one), then restarts Grafana. For a Docker-only setup,
+  `make down && make up` picks up the pinned versions (or `make nuke` to rebuild
+  from a clean volume).
 - **`permission denied while trying to connect to the Docker API`?** The
   playbook adds your login user to the `docker` group, but group membership only
   takes effect in a **new login session**. Log out and back in, close any

@@ -69,7 +69,9 @@ services:
       - ./public:/app/public:ro
 
   grafana:
-    image: grafana/grafana-oss:11.3.0
+    # Pinned together with the Infinity plugin version below. Infinity 4.1.6
+    # needs Grafana >= 12.2.5, which 12.4.3 satisfies. Never use "latest".
+    image: grafana/grafana-oss:${GRAFANA_VERSION:-12.4.3}
     container_name: datawall-grafana
     restart: unless-stopped
     environment:
@@ -78,10 +80,12 @@ services:
       GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
       GF_AUTH_DISABLE_LOGIN_FORM: "true"
       GF_USERS_DEFAULT_THEME: light
-      # The Infinity plugin is installed on first (online) start and then
-      # lives in the grafana_plugins volume, so it keeps working with the
-      # internet unplugged. The Ansible "grafana" role pre-pulls it the same way.
-      GF_INSTALL_PLUGINS: yesoreyeram-infinity-datasource
+      # Install the Infinity plugin at a PINNED version on first (online) start.
+      # _SYNC blocks startup until it's installed, then it lives in the
+      # grafana_plugins volume and keeps working with the internet unplugged
+      # (it is skipped on later starts because it's already present). This
+      # replaces the deprecated GF_INSTALL_PLUGINS.
+      GF_PLUGINS_PREINSTALL_SYNC: "yesoreyeram-infinity-datasource@${GRAFANA_INFINITY_VERSION:-4.1.6}"
     ports:
       - "3000:3000"
     depends_on:

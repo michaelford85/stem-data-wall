@@ -1,11 +1,17 @@
 ---
-# Make the Infinity plugin persist OFFLINE and (re)load the provisioned
-# datasource + dashboard.
+# Make the Infinity plugin persist OFFLINE at the PINNED version, and (re)load
+# the provisioned datasource + dashboard.
 #
 # The grafana image, its data, and its plugins live in named Docker volumes
-# (pre-pulled/installed here while online), so disconnecting the internet later
-# does not remove them. The datasource + dashboard come from
-# grafana/provisioning/ in the repo (mounted read-only by docker-compose).
+# (pulled/installed here while online), so disconnecting the internet later does
+# not remove them. The datasource + dashboard come from grafana/provisioning/ in
+# the repo (mounted read-only by docker-compose).
+#
+# grafana-oss already installs the plugin at container start via
+# GF_PLUGINS_PREINSTALL_SYNC, but that only installs when the plugin is ABSENT.
+# This role is the authoritative enforcer: if the volume has a DIFFERENT version
+# (e.g. an older machine where it resolved to an incompatible build), it removes
+# it and installs the pinned version. Idempotent: no change when already pinned.
 
 - name: Confirm the Grafana provisioning files are present
   ansible.builtin.stat:
@@ -13,20 +19,57 @@
   register: grafana_prov
   failed_when: not grafana_prov.stat.exists
 
-- name: Install the Infinity plugin into the persistent plugins volume
+- name: Read the installed Infinity plugin's metadata (if present)
   ansible.builtin.command: >-
-    docker compose exec -T grafana grafana cli plugins install {{ grafana_plugin }}
+    docker compose exec -T grafana cat {{ grafana_plugins_dir }}/{{ grafana_plugin }}/plugin.json
   args:
     chdir: "{{ install_dir }}"
-  register: grafana_plugin_install
-  changed_when: "'Installed' in grafana_plugin_install.stdout"
-  # Treat "already installed" as success so the role is idempotent.
-  failed_when: >-
-    grafana_plugin_install.rc != 0 and
-    ('already installed' not in (grafana_plugin_install.stdout + grafana_plugin_install.stderr))
+  register: grafana_plugin_json
+  changed_when: false
+  failed_when: false
 
-- name: Restart Grafana to load the plugin + provisioning
+- name: Determine the installed Infinity version
+  ansible.builtin.set_fact:
+    grafana_installed_ver: >-
+      {{ (grafana_plugin_json.stdout | from_json).info.version
+         if (grafana_plugin_json.rc == 0 and (grafana_plugin_json.stdout | trim | length) > 0)
+         else '' }}
+
+- name: Report the plugin version decision
+  ansible.builtin.debug:
+    msg: >-
+      Infinity plugin installed='{{ grafana_installed_ver | default('(none)') }}'
+      pinned='{{ grafana_infinity_version }}' —
+      {{ 'already correct' if grafana_installed_ver == grafana_infinity_version
+         else 'will (re)install the pinned version' }}
+
+# Remove a wrong version first; `plugins install <id> <ver>` refuses to clobber
+# an existing install, so a mismatch needs an explicit remove.
+- name: Remove the mismatched Infinity plugin
+  ansible.builtin.command: >-
+    docker compose exec -T grafana grafana cli
+    --pluginsDir {{ grafana_plugins_dir }} plugins remove {{ grafana_plugin }}
+  args:
+    chdir: "{{ install_dir }}"
+  when:
+    - grafana_installed_ver | length > 0
+    - grafana_installed_ver != grafana_infinity_version
+  changed_when: true
+
+- name: Install the pinned Infinity plugin version
+  ansible.builtin.command: >-
+    docker compose exec -T grafana grafana cli
+    --pluginsDir {{ grafana_plugins_dir }} plugins install
+    {{ grafana_plugin }} {{ grafana_infinity_version }}
+  args:
+    chdir: "{{ install_dir }}"
+  when: grafana_installed_ver != grafana_infinity_version
+  changed_when: true
+
+# Restart only when we actually changed the plugin, so the role is idempotent.
+- name: Restart Grafana to load the pinned plugin + provisioning
   ansible.builtin.command: docker compose restart grafana
   args:
     chdir: "{{ install_dir }}"
+  when: grafana_installed_ver != grafana_infinity_version
   changed_when: true

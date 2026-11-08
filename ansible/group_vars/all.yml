@@ -42,6 +42,14 @@ admin_pin: ""
 # ever used locally on the Pi.
 monitor_url: "http://localhost:8080/"
 grafana_plugin: yesoreyeram-infinity-datasource
+# Pin Grafana and the Infinity plugin TOGETHER, and never use "latest".
+# Infinity 4.1.6's plugin.json requires Grafana >= 12.2.5 (its grafanaDependency
+# is ">=11.6.11-0 <12 || ... || >=12.2.5-0"), which grafana-oss 12.4.3 satisfies.
+# 12.4.3 is the newest multi-arch (arm64) grafana-oss image. To bump, change both
+# and re-check the plugin's grafanaDependency at
+# https://grafana.com/api/plugins/yesoreyeram-infinity-datasource/versions
+grafana_version: "12.4.3"
+grafana_infinity_version: "4.1.6"
 
 # ---- kiosk -----------------------------------------------------------------
 kiosk_user: kiosk
